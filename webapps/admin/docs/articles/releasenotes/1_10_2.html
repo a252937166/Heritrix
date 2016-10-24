@@ -1,0 +1,62 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>8.&nbsp;Release 1.10.2 - 2007-01-15</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix Release Notes"><link rel="up" href="index.html" title="Heritrix Release Notes"><link rel="prev" href="1_12_0.html" title="7.&nbsp;Release 1.12.0 - 2007-03-16"><link rel="next" href="1_10_1.html" title="9.&nbsp;Release 1.10.1 - 2006-09-27"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">8.&nbsp;Release 1.10.2 - 2007-01-15</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="1_12_0.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="1_10_1.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="1_10_2"></a>8.&nbsp;Release 1.10.2 - 2007-01-15</h2></div></div></div><div class="abstract"><p class="title"><b>Abstract</b></p><p>This is primarily a bug-fix release, with a couple of new
+      features, provided before a number of significant changes to the
+      Heritrix project that will require developer and crawl operator
+      adjustments. Post-1.10.2, Heritrix source code control, issue tracking,
+      and build process will migrate to new systems. Also, updates to core
+      classes, especially with regard to the settings architecture, will
+      noticeably break backward compatibility with 1.10.2 and prior crawler
+      settings files and formats.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="1_10_2_contributors"></a>8.1.&nbsp;Contributors</h3></div></div></div><p><div class="itemizedlist"><ul type="disc"><li><p>Olaf Freyer</p></li><li><p>Max Sch&ouml;fmann</p></li></ul></div></p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="1_10_2_changes"></a>8.2.&nbsp;Changes</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="jerichohtml"></a>8.2.1.&nbsp;Jericho HTML Extractor</h4></div></div></div><p>Olaf Freyer has contributed an HTML Extractor named
+        JerichoExtractorHTML based on the Jericho HTML Parser. Following is a
+        quote from the JerichoExtractorHTML class comment describing how the
+        new Extractor differs from ExtractorHTML, its advantages and
+        downsides: &ldquo;<span class="quote"> This extractor extends ExtractorHTML and mimics its
+        workflow - but has some substantial differences when it comes to
+        internal implementation. Instead of heavily relying upon java regular
+        expressions it uses a real html parser library - namely Jericho HTML
+        Parser (http://jerichohtml.sourceforge.net). Using this parser it can
+        better handle broken html (i.e. missing quotes) and also offer
+        improved extraction of HTML form URLs (not only extract the action of
+        a form, but also its default values). Unfortunately this parser also
+        has one major drawback - it has to read the whole document into memory
+        for parsing, thus has an inherent OOME risk. This OOME risk can be
+        reduced/eleminated by limiting the size of documents to be parsed
+        (i.e. using NotExceedsDocumentLengthTresholdDecideRule). Also note
+        that this extractor seems to have a lower overall memory consumption
+        compared to ExtractorHTML. (still to be confirmed on a larger scale
+        crawl) </span>&rdquo;</p></div><p>
+        <div class="table"><a name="N100FF"></a><p class="title"><b>Table&nbsp;1.&nbsp;All Tracked Changes</b></p><table summary="All Tracked Changes" border="1"><colgroup><col><col><col><col><col><col></colgroup><thead><tr><th>ID</th><th>Type</th><th>Summary</th><th>Open Date</th><th>By</th><th>Filer</th></tr></thead><tbody><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=913002&group_id=73833&atid=539102" target="_top">913002</a>
+                </td><td>Add</td><td>Make ExtractorHTML aggressiveness configurable</td><td>2004-03-09</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1573708&group_id=73833&atid=539102" target="_top">1573708</a>
+                </td><td>Add</td><td>[Contrib] JerichoExtractorHTML</td><td>2006-10-09</td><td>nobody</td><td>pandae</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1573708&group_id=73833&atid=539102" target="_top">1633458</a>
+                </td><td>Add</td><td>[arcreader] Support for s3 and streaming
+                improvements</td><td>2007-01-11</td><td>stack</td><td>stack</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1629242&group_id=73833&atid=539099" target="_top">1629242</a>
+                </td><td>Fix</td><td>filehandle leak:
+                ReplayInputStream/BufferedSeekInputStream</td><td>2007-01-05</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1218961&group_id=73833&atid=539099" target="_top">1218961</a>
+                </td><td>Fix</td><td>"failed get of replay" in ExtractorHTML... usu:
+                UTF-16BE</td><td>2005-06-11</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=996161&group_id=73833&atid=539099" target="_top">996161</a>
+                </td><td>Fix</td><td>Fix DNSJava issues (memory)</td><td>2004-07-22</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1477371&group_id=73833&atid=539099" target="_top">1477371</a>
+                </td><td>Fix</td><td>ExtractorDOC wants whole doc in memory</td><td>2006-04-26</td><td>paul_jack</td><td>gojomo</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1618928&group_id=73833&atid=539099" target="_top">1618928</a>
+                </td><td>Fix</td><td>Do not allow http:/ and https:/ urls</td><td>2006-12-19</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1596176&group_id=73833&atid=539099" target="_top">1596176</a>
+                </td><td>Fix</td><td>NotMatchesListRegExpDecideRule extends wrong
+                class</td><td>2006-11-14</td><td>nobody</td><td>pandae</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1593540&group_id=73833&atid=539099" target="_top">1593540</a>
+                </td><td>Fix</td><td>NPE in quotaEnforcer.checkQuotas</td><td>2006-11-09</td><td>nobody</td><td>svc</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1587413&group_id=73833&atid=539099" target="_top">1587413</a>
+                </td><td>Fix</td><td>[PATCH] Webapp doesn't find profiles and ignores
+                jobsdir</td><td>2006-10-30</td><td>nobody</td><td>nobody</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1572391&group_id=73833&atid=539099" target="_top">1572391</a>
+                </td><td>Fix</td><td>SURTs for IP-address URIs unhelpful</td><td>2006-10-06</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1501810&group_id=73833&atid=539099" target="_top">1501810</a>
+                </td><td>Fix</td><td>NPE in FetchHTTP.saveCookies</td><td>2006-06-06</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1501810&group_id=73833&atid=539099" target="_top">1633117</a>
+                </td><td>Fix</td><td>Useragent compare because of case in
+                RobotsExclusionPolicy</td><td>2007-01-11</td><td>stack-sf</td><td>stack-sf</td></tr></tbody></table></div>
+      </p></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="1_12_0.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="1_10_1.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">7.&nbsp;Release 1.12.0 - 2007-03-16&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;9.&nbsp;Release 1.10.1 - 2006-09-27</td></tr></table></div></body></html>

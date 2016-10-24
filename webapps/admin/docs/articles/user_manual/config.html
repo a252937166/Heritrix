@@ -1,0 +1,738 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.&nbsp;Configuring jobs and profiles</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix User Manual"><link rel="up" href="index.html" title="Heritrix User Manual"><link rel="prev" href="creating.html" title="5.&nbsp;Creating jobs and profiles"><link rel="next" href="running.html" title="7.&nbsp;Running a job"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">6.&nbsp;Configuring jobs and profiles</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="creating.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="running.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="config"></a>6.&nbsp;Configuring jobs and profiles</h2></div></div></div><p>Creating crawl jobs (<a href="creating.html#crawljob">Section&nbsp;5.1, &ldquo;Crawl job&rdquo;</a>) and profiles
+    (<a href="creating.html#profile">Section&nbsp;5.2, &ldquo;Profile&rdquo;</a>) is just the first step. Configuring them is a
+    more complicated process.</p><p>The following section applies equally to configuring crawl jobs and
+    profiles. It does not matter if new ones are being created or existing
+    ones are being edited. The interface is almost entirely the same, only the
+    <span class="emphasis"><em>Submit job</em></span> / <span class="emphasis"><em>Finished</em></span> button
+    will vary.<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Editing options for jobs being crawled are somewhat limited. See
+        <a href="running.html#editrun" title="7.4.&nbsp;Editing a running job">Section&nbsp;7.4, &ldquo;Editing a running job&rdquo;</a> for more.</p></div></p><p>Each page in the configuration section of the WUI will have a
+    secondary row of tabs below the general ones. This secondary row is often
+    replicated at the bottom of longer pages.</p><p>This row offers access to different parts of the configuration.
+    While configuring the global level (more on global vs. overrides and
+    refinements in <a href="config.html#overrides" title="6.4.&nbsp;Overrides">Section&nbsp;6.4, &ldquo;Overrides&rdquo;</a> and <a href="config.html#refinements" title="6.5.&nbsp;Refinements">Section&nbsp;6.5, &ldquo;Refinements&rdquo;</a>) the following options are available (left to
+    right):</p><div class="itemizedlist"><ul type="disc"><li><p>Modules (<a href="config.html#modules" title="6.1.&nbsp;Modules (Scope, Frontier, and Processors)">Section&nbsp;6.1, &ldquo;Modules (Scope, Frontier, and Processors)&rdquo;</a>)</p><p>Add/remove/set configurable modules, such as the crawl Scope
+        (<a href="config.html#scopes" title="6.1.1.&nbsp;Crawl Scope">Section&nbsp;6.1.1, &ldquo;Crawl Scope&rdquo;</a>), Frontier (<a href="config.html#frontier" title="6.1.2.&nbsp;Frontier">Section&nbsp;6.1.2, &ldquo;Frontier&rdquo;</a>),
+        or Processors (<a href="config.html#processors" title="6.1.3.&nbsp;Processing Chains">Section&nbsp;6.1.3, &ldquo;Processing Chains&rdquo;</a>).</p></li><li><p>Submodules (<a href="config.html#submodules" title="6.2.&nbsp;Submodules">Section&nbsp;6.2, &ldquo;Submodules&rdquo;</a>)</p><p>Here you can:</p><div class="itemizedlist"><ul type="circle"><li><p>Add/remove/reorder URL canonicalization rules (<a href="config.html#urlcanon" title="6.2.1.&nbsp;URL Canonicalization Rules">Section&nbsp;6.2.1, &ldquo;URL Canonicalization Rules&rdquo;</a>)</p></li><li><p>Add/remove/reorder filters (<a href="config.html#filters" title="6.2.2.&nbsp;Filters">Section&nbsp;6.2.2, &ldquo;Filters&rdquo;</a>)</p></li><li><p>Add/remove login credentials (<a href="config.html#credentials" title="6.2.3.&nbsp;Credentials">Section&nbsp;6.2.3, &ldquo;Credentials&rdquo;</a>)</p></li></ul></div></li><li><p>Settings (<a href="config.html#settings" title="6.3.&nbsp;Settings">Section&nbsp;6.3, &ldquo;Settings&rdquo;</a>)</p><p>Configure settings on Heritrix modules</p></li><li><p>Overrides (<a href="config.html#overrides" title="6.4.&nbsp;Overrides">Section&nbsp;6.4, &ldquo;Overrides&rdquo;</a>)</p><p>Override settings on Heritrix modules based on domain</p></li><li><p>Refinements (<a href="config.html#refinements" title="6.5.&nbsp;Refinements">Section&nbsp;6.5, &ldquo;Refinements&rdquo;</a>)</p><p>Refine settings on Heritrix modules based on arbitrary
+        criteria</p></li><li><p>Submit job / Finished</p><p>Clicking this tab will take the user back to the Jobs or
+        Profiles page, saving any changes.</p></li></ul></div><p>The <span class="emphasis"><em>Settings</em></span> tab is probably the most
+    frequently used page as it allows the user to fine tune the settings of
+    any Heritrix module used in a job or profile.</p><p>It is safe to navigate between these, it will not cause new jobs to
+    be submitted to the queue of pending jobs. That only happens once the
+    <span class="emphasis"><em>Submit job</em></span> tab is clicked. Navigating out of the
+    configuration pages using the top level tabs will cause new jobs to be
+    lost. Any changes made are saved when navigating within the configuration
+    pages. There is no undo function, once made changes can not be
+    undone.</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="modules"></a>6.1.&nbsp;Modules (Scope, Frontier, and Processors)</h3></div></div></div><p>Heritrix has several types of pluggable modules. These modules,
+      while having a fixed interface usually have a number of provided
+      implementations. They can also be third party plugins. The "Modules" tab
+      allows the user to set several types of these pluggable modules.</p><p>Once modules have been added to the configuration they can be
+      configured in greater detail on the Settings tab (<a href="config.html#settings" title="6.3.&nbsp;Settings">Section&nbsp;6.3, &ldquo;Settings&rdquo;</a>). If a module can contain within it multiple other
+      modules, these can be configured on the Submodules tab.</p><p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Modules are referred to by their Java class names
+          (org.archive.crawler.frontier.BdbFrontier). This is done because
+          these are the only names we can be assured of being unique.</p></div>See <a href="http://crawler.archive.org/articles/developer_manual/index.html" target="_top">Developer's
+      Manual</a> for information about creating and adding custom modules
+      to Heritrix.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="scopes"></a>6.1.1.&nbsp;Crawl Scope</h4></div></div></div><p>A crawl scope is an object that decides for each discovered URI
+        if it is within the scope of the current crawl.</p><p>Several scopes are provided with Heritrix:</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>BroadScope</strong></span></p><p>This scope allows for limiting the depth of a crawl (how
+            many links away Heritrix should crawl) but does not impose any
+            limits on the hosts, domains, or URI paths crawled.</p></li><li><p><a name="surtprefixscope"></a><span class="bold"><strong>SurtPrefixScope</strong></span></p><p>A highly flexible and fairly efficient scope which can crawl
+            within defined domains, individual hosts, or path-defined areas of
+            hosts, or any mixture of those, depending on the
+            configuration.</p><p>It considers whether any URI is inside the primary focus of
+            the scope by converting the URI to its <a href="glossary.html#surt">SURT</a>
+            form, and then seeing if that SURT form begins with any of a
+            number of <a href="glossary.html#surtprefix">SURT prefix</a>es. (See the glossary
+            definitions for detailed information about the SURT form of a URI
+            and SURT prefix comparisons.)</p><p>The operator may establish the set of SURT prefixes used
+            either by letting the SURT prefixes be implied from the supplied
+            seed URIs, specifying an external file with a listing of SURT
+            prefixes, or both.</p><p>This scope also enables a special syntax within the seeds
+            list for adding SURT prefixes separate from seeds. Any line in the
+            seeds list beginning with a '+' will be considered a SURT prefix
+            specification, rather than a seed. Any URL you put after the '+'
+            will only be used to deduce a SURT prefix -- it will not be
+            independently scheduled. You can also put your own literal SURT
+            prefix after the '+'.</p><p>For example, each of the following SURT prefix directives in
+            the seeds box are equivalent:</p><p><pre class="programlisting">
++http://(org,example,      # literal SURT prefix
++http://example.org        # regular URL implying same SURT prefix
++example.org               # URL fragment with implied 'http' scheme
+            </pre></p><p>When you use this scope, it adds 3 hard-to-find-in-the-UI
+            attributes -- <code class="literal">surts-source-file</code>,
+            <code class="literal">seeds-as-surt-prefixes</code>, and
+            <code class="literal">surts-dump-file</code> -- to the end of the scope
+            section, just after <code class="literal">transitiveFilter</code> but before
+            <code class="literal">http-headers</code>.</p><p>Use the <code class="literal">surts-source-file</code> setting to
+            supply an external file from which to infer SURT prefixes, if
+            desired. Any URLs in this file will be converted to the implied
+            SURT prefix, and any line beginning with a '+' will be interpreted
+            as a literal, precise SURT prefix. Use the
+            <code class="literal">seeds-as-surt-prefixes</code> setting to establish
+            whether SURT prefixes should be deduced from the seeds, in
+            accordance with the rules given at the <a href="glossary.html#surtprefix">SURT prefix</a> glossary entry. (The default is 'true', to
+            deduce SURT prefixes from seeds.)</p><p>To see what SURT prefixes were actually used -- perhaps
+            merged from seed-deduced and externally-supplied -- you can
+            specify a file path in the <code class="literal">surts-dump-file</code>
+            setting. The sorted list of actual SURT prefixes used will be
+            written to that file for reference. (Note that redundant entries
+            will be removed from this dump. If you have SURT prefixes
+            &lt;http://(org,&gt; and &lt;http://(org,archive,&gt;, only the
+            former will actually be used, because all SURT form URIs prefixed
+            by the latter are also prefixed by the former.)</p><p>See also the crawler wiki on <a href="http://crawler.archive.org/cgi-bin/wiki.pl?SurtScope" target="_top">SurtScope</a>.</p></li><li><p><span class="bold"><strong>FilterScope</strong></span></p><p>A highly configurable scope. By adding different filters in
+            different combinations this scope can be configured to provide a
+            wide variety of behaviour.</p><p>After selecting this filter, you must then go to the
+            <span class="emphasis"><em>Filters</em></span> tab and add the filters you want to
+            run as part of your scope. Add the filters at the
+            <span class="emphasis"><em>focusFilter</em></span> label and give them a meaningful
+            name. The URIRegexFilter probably makes most sense in this context
+            (The ContentTypeRegexFilter won't work at scope time because we
+            don't know the content-type till after we've fetched the
+            document).</p><p>After adding the filter(s), return to the
+            <span class="emphasis"><em>Settings</em></span> tab and fill in any configuration
+            required of the filters. For example, say you added the
+            URIRegexFilter, and you wanted only 'www.archive.org' hosts to be
+            in focus, fill in a regex like the following:
+            <code class="literal">^(?:http|dns)www.archve.org/\.*</code> (Be careful you
+            don't rule out prerequisites such as dns or robots.txt when
+            specifying your scope filter).</p></li></ul></div><p>The following scopes are available, but the same effects can be
+        achieved more efficiently, and in combination, with SurtPrefixScope.
+        When SurtPrefixScope can be more easily understood and configured,
+        these scopes may be removed entirely.</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>DomainScope</strong></span></p><p>This scope limits discovered URIs to the set of domains
+            defined by the provided seeds. That is any URI discovered
+            belonging to a domain from which one of the seed came is within
+            scope. Like always it is possible to apply depth
+            restrictions.</p><p>Using the seed 'archive.org', a domain scope will fetch
+            'audio.archive.org', 'movies.archive.org', etc. It will fetch all
+            discovered URIs from 'archive.org' and from any subdomain of
+            'archive.org'.</p></li><li><p><span class="bold"><strong>HostScope</strong></span></p><p>This scope limits discovered URIs to the set of hosts
+            defined by the provided seeds.</p><p>If the seed is 'www.archive.org', then we'll only fetch
+            items discovered on this host. The crawler will not go to
+            'audio.archive.org' or 'movies.archive.org'.</p></li><li><p><span class="bold"><strong>PathScope</strong></span></p><p>This scope goes yet further and limits the discovered URIs
+            to a section of paths on hosts defined by the seeds. Of course any
+            host that has a seed pointing at its root (i.e.
+            <code class="literal">www.sample.com/index.html</code>) will be included in
+            full where as a host whose only seed is
+            <code class="literal">www.sample2.com/path/index.html</code> will be limited
+            to URIs under <code class="literal">/path/</code>.</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Internally Heritrix defines everything up to the right
+              most slash as the <code class="literal">path</code> when doing path scope
+              so for example, the URLs
+              <code class="literal">http://members.aol.com/bigbird</code> and
+              <code class="literal">http://members.aol.com/~bigbird</code> will treat as
+              in scope any URL that begins <code class="literal">members.aol.com</code>.
+              If your intent is to only include all below the path
+              <code class="literal">bigbird</code>, add a slash on the end, using a form
+              such as <code class="literal">http://members.aol.com/bigbird/</code> or
+              <code class="literal">http://members.aol.com/bigbird/index.html</code>
+              instead.</p></div></li></ul></div><p>Scopes usually allow for some flexibility in defining depth and
+        possible transitive includes (that is getting items that would usually
+        be out of scope because of special circumstance such as their being
+        embedded in the display of an included resource). Most notably, every
+        scope can have additional filters applied in two different contexts
+        (some scopes may only have one these contexts).</p><div class="orderedlist"><ol type="1"><li><p><span class="bold"><strong>Focus</strong></span></p><p>URIs matching these filters will be considered to be within
+            scope</p></li><li><p><span class="bold"><strong>Exclude</strong></span></p><p>URIs matching these filters will be considered to be out of
+            scope.</p></li></ol></div><p>Custom made Scopes may have different sets of filters. Also some
+        scopes have filters hardcoded into them. This allows you to edit their
+        settings but not remove or replace them. For example most of the
+        provided scopes have a <code class="literal">Transclusion</code> filter
+        hardcoded into them that handles transitive items (URIs that normally
+        shouldn't be included but because of special circumstance they will be
+        included).</p><p>For more about Filters see <a href="config.html#filters" title="6.2.2.&nbsp;Filters">Section&nbsp;6.2.2, &ldquo;Filters&rdquo;</a>.</p><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="scopeproblems"></a>6.1.1.1.&nbsp;Problems with the current Scopes</h5></div></div></div><p>Our original Scope classes -- PathScope, HostScope,
+          DomainScope, BroadScope -- all could be thought of as fitting a
+          specific pattern: A URI is included if and only if:</p><p><pre class="programlisting">protected final boolean innerAccepts(Object o) {
+    return ((isSeed(o) || focusAccepts(o)) || additionalFocusAccepts(o) ||
+            transitiveAccepts(o)) &amp;&amp; !excludeAccepts(o);
+}</pre></p><p>More generally, the <span class="emphasis"><em>focus</em></span> filter was
+          meant to rule things in by prima facia/regexp-pattern analysis; the
+          <span class="emphasis"><em>transitive</em></span> filter rule extra items in by
+          dynamic path analysis (for example, off site embedded images); and
+          the <span class="emphasis"><em>exclusion</em></span> filter rule things out by any
+          number of chained exclusion rules. So in a typical crawl, the
+          <span class="emphasis"><em>focus</em></span> filter drew from one of these
+          categories:<div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>broad</strong></span> : accept
+                all</p></li><li><p><span class="bold"><strong>domain</strong></span>: accept if on
+                same 'domain' (for some definition) as seeds</p></li><li><p><span class="bold"><strong>host</strong></span>: accept if on
+                exact host as seeds</p></li><li><p><span class="bold"><strong>path</strong></span>: accept if on same
+                host and a shared path-prefix as seeds</p></li></ul></div>The <span class="emphasis"><em>transitive</em></span> filter configuration
+          was based on the various link-hops and embed-hop thresholds
+          set by the operator.</p><p>The <span class="emphasis"><em>exclusion</em></span> filter was in fact a
+          compound chain of filters, OR'ed together, such that any one of them
+          could knock a URI out of consideration. However, a number of aspects
+          of this arrangement have caused problems: <div class="orderedlist"><ol type="1"><li><p>To truly understand what happens to an URI, you must
+                understand the above nested boolean-construct.</p></li><li><p>Adding mixed focuses -- such as all of this one host,
+                all of this other domain, and then just these paths on this
+                other host -- is not supported by these classes, nor easy to
+                mix-in to the <span class="emphasis"><em>focus</em></span> filter.</p></li><li><p>Constructing and configuring the multiple filters
+                required many setup steps across several WUI pages.</p></li><li><p>The reverse sense of the <span class="emphasis"><em>exclusion</em></span>
+                filters -- if URIs are accepted by the filter, they are
+                excluded from the crawl -- proved confusing, exacerbated by
+                the fact that 'filter' itself can commonly mean either 'filter
+                in' or 'filter out'.</p></li></ol></div></p><p>As a result of these problems, the SurtPrefixScope was added,
+          and further major changes are planned. The first steps are described
+          in the next section, <a href="config.html#decidingscope" title="6.1.1.2.&nbsp;DecidingScope">Section&nbsp;6.1.1.2, &ldquo;DecidingScope&rdquo;</a>. These changes
+          will also affect whether and how filters (see <a href="config.html#filters" title="6.2.2.&nbsp;Filters">Section&nbsp;6.2.2, &ldquo;Filters&rdquo;</a>) are used.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="decidingscope"></a>6.1.1.2.&nbsp;DecidingScope</h5></div></div></div><p>To address the shortcomings above, and generally make
+          alternate scope choices more understandable and flexible, a new
+          mechanism for scoping and filtering has been introduced in Heritrix
+          1.4. This new approach is somewhat like (and inspired by) HTTrack's
+          'scan rules'/filters, Alexa's mask/ignore/void syntax for adjusting
+          recurring crawls, or the Nutch 'regex-urlfilter' facility, but may
+          be a bit more general than any of those.</p><p>This new approach is available as a DecidingScope, which is
+          modelled as a series of DecideRules. Each DecideRule, when presented
+          with an Object (most often a URI of some form), may respond with one
+          of three decisions:</p><div class="itemizedlist"><ul type="disc"><li><p>ACCEPT: the object is ruled in</p></li><li><p>REJECT: the object is ruled out</p></li><li><p>PASS: the rule has no opinion; retain whatever previous
+              decision was made</p></li></ul></div><p>To define a Scope, the operator configures an ordered series
+          of DecideRules. A URI under consideration begins with no assumed
+          status. Each rule is applied in turn to the candidate URI. If the
+          rule decides ACCEPT or REJECT, the URI's status is set accordingly.
+          After all rules have been applied, if the URI's status is ACCEPT it
+          is "in scope" and scheduled for crawling; if its status is REJECT it
+          is discarded.</p><p>There are no branches, but much of what nested conditionals
+          can achieve is possible, in a form that should be be easier to
+          follow than arbitrary expressions.</p><p>The current list of available DecideRules includes:</p><p><pre class="programlisting">   
+    AcceptDecideRule -- ACCEPTs all (establishing an early default)
+    RejectDecideRule -- REJECTs all (establishing an early default)
+    TooManyHopsDecideRule(max-hops=N) -- REJECTS all with hopsPath.length()&gt;N, PASSes otherwise
+    PrerequisiteAcceptDecideRule -- ACCEPTs any with 'P' as last hop, PASSes otherwise (allowing prerequisites of items within other limits to also be included
+    MatchesRegExpDecideRule(regexp=pattern) -- ACCEPTs (or REJECTs) all matching a regexp, PASSing otherwise
+    NotMatchesRegExpDecideRule(regexp=pattern) -- ACCEPTs (or REJECTs) all *not* matching a regexp, PASSing otherwise. 
+    PathologicalPathDecideRule(max-reps=N) -- REJECTs all mathing problem patterns
+    TooManyPathSegmentsDecideRule(max-segs=N) -- REJECTs all with too many path-segments ('/'s)
+    TransclusionDecideRule(extra-hops=N) -- ACCEPTs anything with up to N non-navlink (non-'L')hops at end
+    SurtPrefixedDecideRule(use-seeds=bool;use-file=path) -- ACCEPTs (or REJECTs) anything matched by SURT prefix set generated from supplied seeds/files/etc.
+    NotSurtPrefixedDecideRule(use-seeds=bool;use-file=path) -- ACCEPTs (or REJECTs) anything *not* matched by SURT prefix set generated from supplied seeds/files/etc.
+    OnHostsDecideRule(use-seeds=bool;use-file=path) -- ACCEPTs (or REJECTs) anything on same hosts as deduced from supplied seeds/files/etc.
+    NotOnHostsDecideRule(use-seeds=bool;use-file=path) -- ACCEPTs (or REJECTs) anything on *not* same hosts as deduced from supplied seeds/files/etc.
+    OnDomainsDecideRule(use-seeds=bool;use-file=path) -- ACCEPTs (or REJECTs) anything on same domains as deduced from supplied seeds/files/etc.
+    NotOnDomainsSetDecideRule(use-seeds=bool;use-file=path) -- ACCEPTs (or REJECTs) anything *not* on same domains as deduced from supplied seeds/files/etc.
+    MatchesFilePatternDecideRule -- ACCEPTs (or REJECTs) URIs matching a chosen predefined convenience regexp pattern (such as common file-extensions)
+    NotMatchesFilePatternDecideRule -- ACCEPTs (or REJECTs) URIs *not* matching a chosen predefined convenience regexp pattern
+        </pre></p><p>...covering just about everything our previous focus- and
+          filter- based classes did. By ordering exclude and include actions,
+          combinations that were awkward before -- or even impossible without
+          writing custom code -- becomes straightforward.</p><p>For example, a previous request that was hard for us to
+          accomodate was the idea: "crawl exactly these X hosts, and get
+          offsite images if only on the same domains." That is, don't wander
+          off the exact hosts to follow navigational links -- only to get
+          offsite resources that share the same domain.</p><p>Our relevant function-of-seeds tests -- host-based and
+          domain-based -- were exclusive of each other (at the 'focus' level)
+          and difficult to mix-in with path-based criteria (at the
+          'transitive' level).</p><p>As a series of DecideRules, the above request can be easily
+          achieved as:</p><p><pre class="programlisting">
+        RejectDecideRule
+        OnHostsDecideRule(use-seeds=true)
+        TranscludedDecideRule(extra-hops=2)
+        NotOnDomainsDecideRule(REJECT,use-seeds=true);
+        </pre></p><p>A good default set of DecideRules for many purposes would
+          be...</p><p><pre class="programlisting">
+        RejectDecideRule               // reject by default
+        SurtPrefixedDecideRule         // accept within SURT prefixes established by seeds
+        TooManyHopsDecideRule          // but reject if too many hops from seeds
+        TransclusionDecideRule         // notwithstanding above, accept if within a few transcluding hops (frames/imgs/redirects)
+        PathologicalPathDecideRule     // but reject if pathological repetitions
+        TooManyPathSegmentsDecideRule  // ...or if too many path-segments
+        PrerequisiteAcceptDecideRule   // but always accept a prerequisite of other URI
+        </pre></p><p>In Heritirx 1.10.0, the default profile was changed to use the
+          above set of DecideRules (Previous to this, the operator had to
+          choose the 'deciding-default' profile, since removed).</p><p>The naming, behavior, and user-interface for DecideRule-based
+          scoping is subject to significant change based on feedback and
+          experience in future releases.</p><p>Enable FINE logging on the class
+          <code class="literal">org.archive.crawler.deciderules.DecideRuleSequence</code>
+          to watch each deciderules finding on each processed URI.</p></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="frontier"></a>6.1.2.&nbsp;Frontier</h4></div></div></div><p>The Frontier is a pluggable module that maintains the internal
+        state of the crawl. What URIs have been discovered, crawled etc. As
+        such its selection greatly effects, for instance, the order in which
+        discovered URIs are crawled.</p><p>There is only one Frontier per crawl job.</p><p>Multiple Frontiers are provided with Heritrix, each of a
+        particular character.</p><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="bdbfrontier"></a>6.1.2.1.&nbsp;BdbFrontier</h5></div></div></div><p>The default Frontier in Heritrix as of 1.4.0 and later is the
+          BdbFrontier(Previously, the default was the <a href="config.html#hqf" title="6.1.2.2.&nbsp;HostQueuesFrontier">Section&nbsp;6.1.2.2, &ldquo;HostQueuesFrontier&rdquo;</a>).
+          The BdbFrontier visits URIs and sites discovered in a generally
+          breadth-first manner, it offers configuration options controlling
+          how it throttles its activity against particular hosts, and whether
+          it has a bias towards finishing hosts in progress ('site-first'
+          crawling) or cycling among all hosts with pending URIs.</p><p>Discovered URIs are only crawled once, except that robots.txt
+          and DNS information can be configured so that it is refreshed at
+          specified intervals for each host.</p><p>The main difference between the BdbFrontier and its precursor,
+          <a href="config.html#hqf" title="6.1.2.2.&nbsp;HostQueuesFrontier">Section&nbsp;6.1.2.2, &ldquo;HostQueuesFrontier&rdquo;</a>, is that BdbFrontier uses BerkeleyDB Java
+          Edition to shift more running Frontier state to disk.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="hqf"></a>6.1.2.2.&nbsp;HostQueuesFrontier</h5></div></div></div><p>The forerunner of the <a href="config.html#bdbfrontier" title="6.1.2.1.&nbsp;BdbFrontier">Section&nbsp;6.1.2.1, &ldquo;BdbFrontier&rdquo;</a>. Now
+          deprecated mostly because its custom disk-based data structures
+          could not move as much Frontier state out of main memory as the
+          BerkeleyDB Java Edition approach. Has same general characteristics
+          as the <a href="config.html#bdbfrontier" title="6.1.2.1.&nbsp;BdbFrontier">Section&nbsp;6.1.2.1, &ldquo;BdbFrontier&rdquo;</a>.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="dsf"></a>6.1.2.3.&nbsp;DomainSensitveFrontier</h5></div></div></div><p>A subclass of the <a href="config.html#hqf" title="6.1.2.2.&nbsp;HostQueuesFrontier">Section&nbsp;6.1.2.2, &ldquo;HostQueuesFrontier&rdquo;</a> written by Oskar
+          Grenholm. The DSF allows specifying an upper-bound on the number of
+          documents downloaded per-site. It does this by exploiting <a href="config.html#overrides" title="6.4.&nbsp;Overrides">Section&nbsp;6.4, &ldquo;Overrides&rdquo;</a> adding a filter to block further fetching
+          once the crawler has attained per-site limits.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="arf"></a>6.1.2.4.&nbsp;AdaptiveRevisitingFrontier</h5></div></div></div><p>The AdaptiveRevisitingFrontier -- a.k.a
+          <span class="emphasis"><em>AR</em></span> Frontier -- will repeatedly visit all
+          encountered URIs. Wait time between visits is configurable and
+          varies based on wait intervals specified by a WaitEvaluator
+          processor. It was written by Kristinn Sigurdsson. <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This Frontier is still experimental, in active development
+              and has not been tested extensively.</p></div></p><p>In addition to the WaitEvaluator (or similar processor) a
+          crawl using this Frontier will also need to use the ChangeEvaluator
+          processor: i.e. this Frontier requires that ChangeEvaluator and
+          WaitEvaluator or equivalents are present in the processing
+          chain.</p><p>ChangeEvaluator should be at the very top of the extractor
+          chain.</p><p>WaitEvaluator -- or an equivalent -- needs to be in the post
+          processing chain.</p><p>The ChangeEvaluator has no configurable settings. The
+          WaitEvaluator however has numerous settings to adjust the revisit
+          policy. <div class="itemizedlist"><ul type="disc"><li><p>Initial wait. A waiting period before revisiting the
+                first time.</p></li><li><p>Increase and decrease factors on unchanged and changed
+                documents respectively. Basically if a document has not
+                changed between visits, its wait time will be multiplied by
+                the "unchanged-factor" and if it has changed, the wait time
+                will be divided by the "changed-factor". Both values accept
+                real numbers, not just integers.</p></li><li><p>Finally, there is a 'default-wait-interval' for URIs
+                where it is not possible to judge changes in content.
+                Currently this applies only to DNS lookups.</p></li></ul></div></p><p>If you want to specify different wait times and factors for
+          URIs based on their mime types, this is possible. You have to create
+          a Refinement (<a href="config.html#refinements" title="6.5.&nbsp;Refinements">Section&nbsp;6.5, &ldquo;Refinements&rdquo;</a>) and use the
+          ContentType criteria. Simply use a regular expression that matches
+          the desired mime type as its parameter and then override the
+          applicable parameters in the refinement.</p><p>By setting the 'state' directory to the same location that
+          another AR crawl used, it should resume that crawl (minus some
+          stats).</p></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="processors"></a>6.1.3.&nbsp;Processing Chains</h4></div></div></div><p>When a URI is crawled it is in fact passed through a series of
+        processors. This series is split for convenience between five chains
+        and the user can add, remove and reorder the processors on each of
+        these chains.</p><p>Each URI taken off the Frontier queue runs through the
+        <code class="literal">Processing Chains</code> listed in the diagram shown
+        below. URIs are always processed in the order shown in the diagram
+        unless a particular processor throws a fatal error or decides to stop
+        the processing of the current URI for some reason. In this
+        circumstance, processing skips to the end, to the Post-processing
+        chain, for cleanup.</p><p>Each processing chain is made up of zero or more individual
+        processors. For example, the extractor processing chain might comprise
+        the <code class="literal">ExtractorHTML</code> , an
+        <code class="literal">ExtractorJS</code> , and the
+        <code class="literal">ExtractorUniversal</code> processors. Within a processing
+        step, the order in which processors are run is the order in which
+        processors are listed on the modules page.</p><p>Generally, particular processors only make sense within the
+        context of one particular processing chain. For example, it wouldn't
+        make sense to run the <code class="literal">FetchHTTP</code> processor in the
+        Post-processing chain. This is however not enforced, so users must
+        take care to construct logical processor chains.</p><div><img src="../processing_steps.png"></div><p>Most of the processors are fairly self explanatory, however the
+        first and last two merit a little bit more attention.</p><p>In the <code class="literal">Pre-fetch processing</code> chain the
+        following two processors should be included (or replacement modules
+        that perform similar operations):</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>Preselector</strong></span></p><p>Last check if the URI should indeed be crawled. Can for
+            example recheck scope. Useful if scope has been changed after the
+            crawl starts (This processor is not strictly necessary).</p></li><li><p><span class="bold"><strong>PreconditionEnforcer</strong></span></p><p>Ensures that all preconditions for crawling a URI have been
+            met. These currently include verifying that DNS and robots.txt
+            information has been fetched for the URI. Should always be
+            included.</p></li></ul></div><p>Similarly the <code class="literal">Post Processing</code> chain has the
+        following special purpose processors:</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>CrawlStateUpdater</strong></span></p><p>Updates the per-host information that may have been affected
+            by the fetch. This is currently robots and IP address info. Should
+            always be included.</p></li><li><p><span class="bold"><strong>LinksScoper</strong></span></p><p>Checks all links extracted from the current download against
+            the crawl scope. Those that are out of scope are discarded.
+            Logging of discarded URLs can be enabled.</p></li><li><p><span class="bold"><strong>FrontierScheduler</strong></span></p><p>'Schedules' any URLs stored as CandidateURIs found in the
+            current CrawlURI with the frontier for crawling. Also schedules
+            prerequisites if any.</p></li></ul></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="stattrack"></a>6.1.4.&nbsp;Statistics Tracking</h4></div></div></div><p>Any number of statistics tracking modules can be attached to a
+        crawl. Currently only one is provided with Heritrix. The
+        <code class="literal">StatisticsTracker</code> module that comes with Heritrix
+        writes the <code class="literal">progress-statistics.log</code> file and
+        provides the WUI with the data it needs to display progress
+        information about a crawl. It is strongly recommended that any crawl
+        running with the WUI use this module.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="submodules"></a>6.2.&nbsp;Submodules</h3></div></div></div><p>On the Submodules tab, configuration points that take
+      variable-sized listings of components can be configured. Components can
+      be added, ordered, and removed. Examples of such components are listings
+      of canonicalization rules to run against each URL discovered, <a href="config.html#filters" title="6.2.2.&nbsp;Filters">Section&nbsp;6.2.2, &ldquo;Filters&rdquo;</a> on processors, and credentials. Once submodules are
+      added under the Submodules tab, they will show in subsequent redrawings
+      of the Settings tab. Values which control their operation are configured
+      over under the Settings tab.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="urlcanon"></a>6.2.1.&nbsp;URL Canonicalization Rules</h4></div></div></div><p>Heritrix keeps a list of already seen URLs and before fetching,
+        does a look up into this 'already seen' or 'already included' list to
+        see if the URL has already been crawled. Often an URL can be written
+        in multiple ways but the page fetched is the same in each case. For
+        example, the page that is at
+        <code class="literal">http://www.archive.org/index.html</code> is the same page
+        as is at <code class="literal">http//WWW.ARCHIVE.ORG/</code> though the URLs
+        differ (In this case by case only). Before going to the 'already
+        included' list, Heritrix makes an effort at equating the likes of
+        <code class="literal">http://www.archive.org/index.html</code> and
+        <code class="literal">http://ARCHIVE.ORG/</code> by running each URL through a
+        set of canonicalization rules. Heritrix uses the result of this
+        canonicalization process when it goes to test if an URL has already
+        been seen.</p><p>An example of a canonicalization rule would lowercase all URLs.
+        Another might strip the 'www' prefix from domains.</p><p>The <code class="literal">URL Canonicalization Rules</code> screen allows
+        you to specify canonicalization rules and the order in which they are
+        run. A default set lowercases, strips wwws, removes sessionids and
+        does other types of fixup such as removal of any userinfo. The URL
+        page works in the same manner as the <a href="config.html#filters" title="6.2.2.&nbsp;Filters">Section&nbsp;6.2.2, &ldquo;Filters&rdquo;</a>
+        page.</p><p>To watch the canonicalization process, enable
+        <code class="literal">org.archive.crawler.url.Canonicalizer</code> logging in
+        <code class="literal">heritrix.properties</code> (There should already be a
+        commented out directive in the properties file. Search for it). Output
+        will show in <code class="literal">heritrix_out.log</code>. Set the logging
+        level to INFO to see just before and after the transform. Set level to
+        FINE to see the result of each rule's transform.</p><p>Canonicalization rules can be added as an override so an added
+        rule only works in the overridden domain.</p><p>Canonicalization rules are NOT run if the URI-to-check is the
+        fruit of a redirect. We do this for the following reason. Lets say the
+        www canonicalization rule is in place (the rule that equates
+        'archive.org' and 'www.archive.org'). If the crawler first encounters
+        'archive.org' but the server at archive.org wants us to come in via
+        'www.archive.org', it will redirect us to 'www.archive.org'. The
+        alreadyseen database will have been marked with 'archive.org' on the
+        original access of 'archive.org'. The www canonicalization rule runs
+        and makes 'archive.org' of 'www.archive.org' which has already been
+        seen. If we always ran canonicalization rules regardless, we wouldn't
+        ever crawl 'www.archive.org'.</p><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="urlcanonexample"></a>6.2.1.1.&nbsp;URL Canonicalization Use Case: Stripping Site-Particular
+          Session IDs</h5></div></div></div><p>Say site x.y.z is returning URLs with a session ID key of
+          <code class="literal">cid</code> as in
+          <code class="literal">http://x.y.z/index.html?cid=XYZ123112232112229BCDEFFA0000111</code>.
+          Say the session ID value is always 32 characters. Say also, for
+          simplicity's sake, that it always appears on the end of the
+          URL.</p><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="urlcanonexamplesoln"></a>6.2.1.1.1.&nbsp;Solution</h6></div></div></div><p>Add a RegexRule override for the domain x.y.z. To do this,
+            pause the crawl, add an override for x.y.z by clicking on the
+            <code class="literal">overrides</code> tab in the main menu bar and filling
+            in the domain x.y.z. Once in the override screen, click on the
+            <code class="literal">URL</code> tab in the override menu bar -- the new bar
+            that appears below the main bar when in override mode -- and add a
+            <code class="literal">RegexRule</code> canonicalization rule. Name it
+            <code class="literal">cidStripper</code>. Adjust where you'd like it to
+            appear in the running of canonicalization rules (Towards the end
+            should be fine). Now browse back to the override settings. The new
+            canonicalization rule <code class="literal">cidStripper</code> should appear
+            in the settings page list of canonicalization rules. Fill in the
+            RegexRule <code class="literal">matching-regex</code> with something like
+            the following: <code class="literal">^(.+)(?:cid=[0-9a-zA-Z]{32})?$</code>
+            (Match a tail of 'cid=SOME_32_CHAR_STR' grouping all that comes
+            before this tail). Fill into the <code class="literal">format</code> field
+            <code class="literal">${1}</code> (This will copy the first group from the
+            regex if the regex matched). To see the rule in operation, set the
+            logging level for
+            <code class="literal">org.archive.crawler.url.Canonicalizer</code> in
+            <code class="literal">heritrix.properties</code> (Try uncommenting the line
+            <code class="literal">org.archive.crawler.url.Canonicalizer.level =
+            INFO</code>). Study the output and adjust your regex
+            accordingly.</p><p>See also <a href="http://groups.yahoo.com/group/archive-crawler/message/1611" target="_top">msg1611</a>
+            for another's experience getting regex to work.</p></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="filters"></a>6.2.2.&nbsp;Filters</h4></div></div></div><p>Filters are modules that take a <a href="glossary.html#crawluri">CrawlURI</a> and
+        determine if it matches the criteria of the filter. If so it returns
+        true, otherwise it returns false.</p><p>Filters are used in a couple of different contexts in
+        Heritrix.</p><p>Their use in scopes has already been discussed in <a href="config.html#scopes" title="6.1.1.&nbsp;Crawl Scope">Section&nbsp;6.1.1, &ldquo;Crawl Scope&rdquo;</a> and the problems with using them that in <a href="config.html#scopeproblems" title="6.1.1.1.&nbsp;Problems with the current Scopes">Section&nbsp;6.1.1.1, &ldquo;Problems with the current Scopes&rdquo;</a>.</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>A DecidingFilter was added in 1.4.0 to address problems with
+          current filter model. DecideRules can be added into a DecidingFilter
+          with the filter decision the result of all included DecideRule set
+          processing. There are DecideRule equivalents for all Filter-types
+          mentioned below. See <a href="config.html#decidingscope" title="6.1.1.2.&nbsp;DecidingScope">Section&nbsp;6.1.1.2, &ldquo;DecidingScope&rdquo;</a> for more on
+          the particulars of DecideRules and on the new Deciding model in
+          general.</p></div><p>Aside from scopes, filters are also used in processors. Filters
+        applied to processors always filter URIs <span class="emphasis"><em>out</em></span>.
+        That is to say that any URI matching a filter on a processor will
+        effectively skip over that processor.</p><p>This can be useful to disable (for instance) link extraction on
+        documents coming from a specific section of a given website.</p><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1063A"></a>6.2.2.1.&nbsp;Adding, removing and reordering filters</h5></div></div></div><p>The Submodules page of the configuration section of the WUI
+          lists existing filters along with the option to remove, add, or move
+          Filters up or down in the listing.</p><p>Adding a new filters requires giving it a unique name (for
+          that list), selecting the class type of the filter from a combobox
+          and clicking the associated add button. After the filter is added,
+          its custom settings, if any, will appear in the Settings page of the
+          configuration UI.</p><p>Since filters can in turn contain other filters (the OrFilter
+          being the best example of this) these lists can become quite complex
+          and at times confusing.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10643"></a>6.2.2.2.&nbsp;Provided filters</h5></div></div></div><p>The following is an overview of the most useful of the filters
+          provided with Heritrix.</p><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N10648"></a>6.2.2.2.1.&nbsp;org.archive.crawler.filter.OrFilter</h6></div></div></div><p>Contains any number of filters and returns true if any of
+            them returns true. A logical OR on its filters basically.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N1064D"></a>6.2.2.2.2.&nbsp;org.archive.crawler.filter.URIRegExpFilter</h6></div></div></div><p>Returns true if a URI matches the regular expression set for
+            it. See <a href="glossary.html#regexpr">Regular expressions</a> for more about regular
+            expressions in Heritrix.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N10655"></a>6.2.2.2.3.&nbsp;org.archive.crawler.filter.ContentTypeRegExpFilter</h6></div></div></div><p>This filter runs a regular expression against the response
+            <code class="literal">Content-Type</code> header. Returns true if content
+            type matches the regular expression. ContentType regexp filter
+            cannot be used until after fetcher processors have run. Only then
+            is the Content-Type of the response known. A good place for this
+            filter is the writer step in processing. See <a href="glossary.html#regexpr">Regular expressions</a> for more about regular expressions in
+            Heritrix.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N10661"></a>6.2.2.2.4.&nbsp;org.archive.crawler.filter.SurtPrefixFilter</h6></div></div></div><p>Returns true if a URI is prefixed by one of the <a href="glossary.html#surtprefix">SURT prefix</a>es supplied by an external file.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N10669"></a>6.2.2.2.5.&nbsp;org.archive.crawler.filter.FilePatternFilter</h6></div></div></div><p>Compares suffix of a passed URI against a regular expression
+            pattern, returns true for matches.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N1066E"></a>6.2.2.2.6.&nbsp;org.archive.crawler.filter.PathDepthFilter</h6></div></div></div><p>Returns true for all <a href="glossary.html#crawluri">CrawlURI</a> passed in
+            with a path depth less or equal to its
+            <code class="literal">max-path-depth</code> value.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N1067A"></a>6.2.2.2.7.&nbsp;org.archive.crawler.filter.PathologicalPathFilter</h6></div></div></div><p>Checks if a URI contains a repeated pattern.</p><p>This filter checks if a pattern is repeated a specific
+            number of times. The use is to avoid crawler traps where the
+            server adds the same pattern to the requested URI like:</p><p><pre class="programlisting">  http://host/img/img/img/img....</pre></p><p>Returns true if such a pattern is found. Sometimes used on a
+            processor but is primarily of use in the exclude section of
+            scopes.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N10687"></a>6.2.2.2.8.&nbsp;org.archive.crawler.filter.HopsFilter</h6></div></div></div><p>Returns true for all URIs passed in with a <a href="glossary.html#link-hop-count">Link hop count</a> greater than the
+            <code class="literal">max-link-hops</code> value.</p><p>Generally only used in scopes.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N10695"></a>6.2.2.2.9.&nbsp;org.archive.crawler.filter.TransclusionFilter</h6></div></div></div><p>Filter which returns true for <a href="glossary.html#crawluri">CrawlURI</a>
+            instances which contain more than zero but fewer than
+            <code class="literal">max-trans-hops</code> embed entries at the end of
+            their <a href="glossary.html#discoverypath">Discovery path</a>.</p><p>Generally only used in scopes.</p></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="credentials"></a>6.2.3.&nbsp;Credentials</h4></div></div></div><p>In this section you can add login credentials that will allow
+        Heritrix to gain access to areas of websites requiring authentication.
+        As with all modules they are only added here (supplying a unique name
+        for each credential) and then configured on the settings page (<a href="config.html#settings" title="6.3.&nbsp;Settings">Section&nbsp;6.3, &ldquo;Settings&rdquo;</a>).</p><p>One of the settings for each credential is its
+        <code class="literal">credential-domain</code> and thus it is possible to create
+        all credentials on the global level. However since this can cause
+        excessive unneeded checking of credentials it is recommended that
+        credentials be added to the appropriate domain override (see <a href="config.html#overrides" title="6.4.&nbsp;Overrides">Section&nbsp;6.4, &ldquo;Overrides&rdquo;</a> for details). That way the credential is only
+        checked when the relevant domain is being crawled.</p><p>Heritrix can do two types of authentication: <a href="http://www.faqs.org/rfcs/rfc2617.html" target="_top">RFC2617</a> (BASIC and
+        DIGEST Auth) and POST and GET of an HTML Form.</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Logging</h3><p>To enable text console logging of authentication interactions
+          (for example for debugging), set the FetchHTTP and
+          PrconditionEnforcer log levels to fine</p><p><pre class="programlisting">org.archive.crawler.fetcher.FetchHTTP.level = FINE
+org.archive.crawler.prefetch.PreconditionEnforcer.level = FINE</pre></p><p>This is done by editing the
+          <code class="filename">heritrix.properties</code> file under the
+          <code class="filename">conf</code> directory as described in <a href="install.html#heritrix.properties" title="2.2.2.1.&nbsp;heritrix.properties">Section&nbsp;2.2.2.1, &ldquo;heritrix.properties&rdquo;</a>.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N106D4"></a>6.2.3.1.&nbsp;<a href="http://www.faqs.org/rfcs/rfc2617.html" target="_top">RFC2617</a> (BASIC
+          and DIGEST Auth)</h5></div></div></div><p>Supply <a href="#cd" target="_top">credential-domain</a>, <a href="realm" target="_top">realm</a>, login, and password.</p><p>The way that the RFC2617 authentication works in Heritrix is
+          that in response to a 401 response code (Unauthorized), Heritrix
+          will use a key made up of the Credential Domain plus Realm to do a
+          lookup into its Credential Store. If a match is found, then the
+          credential is loaded into the CrawlURI and the CrawlURI is marked
+          for immediate retry.</p><p>When the requeued CrawlURI comes around again, this time
+          through, the found credentials are added to the request. If the
+          request succeeds -- result code of 200 -- the credentials are
+          promoted to the CrawlServer and all subsequent requests made against
+          this CrawlServer will preemptively volunteer the credential. If the
+          credential fails -- we get another 401 -- then the URI is let die a
+          natural 401 death.</p><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="cd"></a>6.2.3.1.1.&nbsp;credential-domain</h6></div></div></div><p>This equates to the canonical root URI of RFC2617;
+            effectively, in our case, its the CrawlServer name or <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/net/URI.html" target="_top">URI
+            authority</a> (domain plus port if other than port 80).
+            Examples of credential-domain would be: 'www.archive.org' or
+            'www.archive.org:8080', etc.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="realm"></a>6.2.3.1.2.&nbsp;realm</h6></div></div></div><p>Realm as per <a href="http://www.faqs.org/rfcs/rfc2617.html" target="_top">RFC2617</a>. The
+            realm string must match exactly the realm name presented in the
+            authentication challenge served up by the web server</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N106FC"></a>6.2.3.1.3.&nbsp;Known Limitations</h6></div></div></div><div class="simplesect" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N106FF"></a>One Realm per Credential Domain Only</h6></div></div></div><p>Currently, you can only have one realm per credential
+              domain.</p></div><div class="simplesect" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N10704"></a>Digest Auth works for Apache</h6></div></div></div><p>... but your mileage may vary going up against other
+              servers (See <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=914301&group_id=73833&atid=539102" target="_top">[
+              914301 ] Logging in (HTTP POST, Basic Auth, etc.)</a> to
+              learn more).</p></div></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1070D"></a>6.2.3.2.&nbsp;HTML Form POST or GET</h5></div></div></div><p>Supply <a href="#cdh" target="_top">credential-domain</a>, <a href="httpmethod" target="_top">http-method</a>, <a href="loginuri" target="_top">login-uri</a>, and <a href="formitems" target="_top">form-items</a>, .</p><p>Before a <code class="literal">uri</code> is scheduled, we look for
+          preconditions. Examples of preconditions are the getting of the the
+          dns record for the server that hosts the <code class="literal">uri</code> and
+          the fetching of the <code class="literal">robots.txt</code>: i.e. we don't
+          fetch any <code class="literal">uri</code> unless we first have gotten the
+          <code class="literal">robots.txt</code> file. The HTML Form Credentials are
+          done as a precondition. If there are HTML Form Credentials for a
+          particular crawlserver in the credential store, the uri specified in
+          the HTML Form Credential login-uri field is scheduled as a
+          precondition for the site, after the fetching of the dns and robots
+          preconditions.</p><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="cdh"></a>6.2.3.2.1.&nbsp;credential-domain</h6></div></div></div><p>Same as the Rfc22617 Credential <a href="#cd" target="_top">credential-domain</a>.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="loginuri"></a>6.2.3.2.2.&nbsp;login-url</h6></div></div></div><p>Relative or absolute URI to the page that the HTML Form
+            submits to (Not the page that contains the HTML Form).</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="formitems"></a>6.2.3.2.3.&nbsp;form-items</h6></div></div></div><p>Listing of HTML Form key/value pairs. Don't forget to
+            include the form submit button.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N1074E"></a>6.2.3.2.4.&nbsp;Known Limitations</h6></div></div></div><div class="simplesect" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N10751"></a>Site is crawled logged in or not; cannot do both</h6></div></div></div><p>If a site has an HTML Form Credential associated, the next
+              thing done after the getting of the dns record and the
+              robots.txt is that a login is performed against all listed HTML
+              Form Credential login-uris. This means that the crawler will
+              only ever view sites that have HTML Form Credentials from the
+              'logged-in' perspective. There is no way currently of telling
+              the crawler to crawl the site 'non-logged-in' and then, when
+              done, log in and crawl the site anew only this time from the
+              'logged-in' perspective (At least, not as part of the one crawl
+              job).</p></div><div class="simplesect" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N10756"></a>No means of verifying or rerunning login</h6></div></div></div><p>The login is run once only and the crawler continues
+              whether the login succeeded or not. There is no means of telling
+              the crawler retry upon unsuccessful authentication. Neither is
+              there a means for the crawler to report success or otherwise
+              (The operator is expected to study logs to see whether
+              authentication ran successfully).</p></div></div></div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="settings"></a>6.3.&nbsp;Settings</h3></div></div></div><p>This page presents a semi-treelike representation of all the
+      modules (fixed and pluggable alike) that make up the current
+      configuration and allows the user to edit any of their settings. Go to
+      the Modules and SubModules tabs to add, remove, replace modules
+      mentioned here in the Settings page.</p><p>The first option presented directly under the top tabs is whether
+      to hide or display 'expert settings'. Expert settings are those settings
+      that are rarely changed and should only be changed by someone with a
+      clear understanding of their implication. This document will not discuss
+      any of the expert settings.</p><p>The first setting is the description of the job previously
+      discussed. The seed list is at the bottom of the page. Between the two
+      are all the other possible settings.</p><p>Module names are presented in bold and a short explanation of them
+      is provided. As discussed in the previous three chapters some of them
+      can be replaced, removed or augmented.</p><p>Behind each module and settings name a small question mark is
+      present. By clicking on it a more detailed explanation of the relevant
+      item pops up. For most settings users should refer to that as their
+      primary source of information.</p><p>Some settings provide a fixed number of possible 'legal' values in
+      combo boxes. Most are however typical text input fields. Two types of
+      settings require a bit of additional attention.</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>Lists</strong></span></p><p>Some settings are a list of values. In those cases a list is
+          printed with an associated <span class="emphasis"><em>Remove</em></span> button and an
+          input box is printed below it with an <span class="emphasis"><em>Add</em></span>
+          button. Only those items in the list box are considered in the list
+          itself. A value in the input box does not become a part of the list
+          until the user clicks <span class="emphasis"><em>Add</em></span>. There is no way to
+          edit existing values beyond removing them and replacing them with
+          correct values. It is also not possible to reorder the list.</p></li><li><p><span class="bold"><strong>Simple typed maps</strong></span></p><p>Generally Maps in the Heritrix settings framework contain
+          program modules (such as the processors for example) and are
+          therefore edited elsewhere. However maps that only accept simple
+          data types (Java primitives) can be edited here.</p><p>They are treated as a key, value pair. Two input boxes are
+          provided for new entries with the first one representing the key and
+          the second the value. Clicking the associated
+          <span class="emphasis"><em>Add</em></span> button adds the entry to the map. Above the
+          input boxes a list of existing entries is displayed along with a
+          <span class="emphasis"><em>Remove</em></span> option. Simple maps can not be
+          reordered.</p></li></ul></div><p>Changes on this page are not saved until you navigate to another
+      part of the settings framework or you click the submit job/finished
+      tab.</p><p>If there is a problem with one of the settings a red star will
+      appear next to it. Clicking the star will display the relevant error
+      message.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1078F"></a>6.3.1.&nbsp;Basic settings</h4></div></div></div><p>Some settings are always present. They form the so called crawl
+        order. The root of the settings hierarchy that other modules plug
+        into.</p><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10794"></a>6.3.1.1.&nbsp;Crawl limits</h5></div></div></div><p>In addition to limits imposed on the scope of the crawl it is
+          possible to enforce arbitrary limits on the duration and extent of
+          the crawl with the following settings:</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>max-bytes-download</strong></span></p><p>Stop after a fixed number of bytes have been downloaded. 0
+              means unlimited.</p></li><li><p><span class="bold"><strong>max-document-download</strong></span></p><p>Stop after downloading a fixed number of documents. 0
+              means unlimited.</p></li><li><p><span class="bold"><strong>max-time-sec</strong></span></p><p>Stop after a certain number of seconds have elapsed. 0
+              means unlimited.</p><p>For handy reference there are 3600 seconds in an hour and
+              86400 seconds in a day.</p></li></ul></div><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>These are not hard limits. Once one of these limits is hit
+            it will trigger a graceful termination of the crawl job, that
+            means that URIs already being crawled will be completed. As a
+            result the set limit will be exceeded by some amount.</p></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N107B4"></a>6.3.1.2.&nbsp;max-toe-threads</h5></div></div></div><p>Set the number of toe threads (see <a href="glossary.html#toethreads">Toe Threads</a>).</p><p>If running a domain crawl smaller than 100 hosts a value
+          approximately twice the number of hosts should be enough. Values
+          larger then 150-200 are rarely worthwhile unless running on machines
+          with exceptional resources.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="httpheaders"></a>6.3.1.3.&nbsp;HTTP headers</h5></div></div></div><p>Currently Heritrix supports configuring the
+          <code class="literal">user-agent</code> and <code class="literal">from</code> fields in
+          the HTTP headers generated when requesting URIs from
+          webservers.</p><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="from"></a>6.3.1.3.1.&nbsp;from</h6></div></div></div><p>The <code class="literal">from</code> attribute must contain a valid
+            e-mail address.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="user-agent"></a>6.3.1.3.2.&nbsp;user-agent</h6></div></div></div><p>The initial user-agent template you see when you first start
+            heritrix will look something like the following:</p><p><pre class="programlisting">Mozilla/5.0 (compatible; heritrix/0.11.0 +PROJECT_URL_HERE</pre></p><p>You must change at least the
+            <code class="literal">PROJECT_URL_HERE</code> and put in place a website
+            that webmasters can go to to view information on the organization
+            or person running a crawl.</p><p>The <code class="literal">user-agent</code> string must adhere to the
+            following format:</p><p><pre class="programlisting">[optional-text] ([optional-text] +PROJECT_URL [optional-text]) [optional-text]</pre></p><p>The parenthesis and plus sign before the URL must be
+            present. Other examples of valid user agents would include:</p><p><pre class="programlisting">my-heritrix-crawler (+http://mywebsite.com)
+Mozilla/5.0 (compatible; bush-crawler +http://whitehouse.gov)
+Mozilla/5.0 (compatible; os-heritrix/0.11.0 +http://loc.gov on behalf to the Library of Congress)</pre></p></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N107F6"></a>6.3.1.4.&nbsp;Robots honoring policy</h5></div></div></div><p>There are five types of policies offered on how to deal with
+          <code class="literal">robots.txt</code> rules:</p><div class="orderedlist"><ol type="1"><li><p><span class="bold"><strong>classic</strong></span></p><p>Simply obey the <code class="literal">robots.txt</code> rules.
+              Recommended unless you have special permission to collect a site
+              more aggressively.</p></li><li><p><span class="bold"><strong>ignore</strong></span></p><p>Completely ignore <code class="literal">robots.txt</code>
+              rules.</p></li><li><p><span class="bold"><strong>custom</strong></span></p><p>Obey user set, custom, <code class="literal">robots.txt</code> rules
+              instead of those discovered on the relevant site.</p><p>Mostly useful in overrides.</p></li><li><p><span class="bold"><strong>most-favored</strong></span></p><p>Obey the rules set in the <code class="literal">robots.txt</code>
+              for the robot that is allowed to access the most or has the
+              least restrictions. Can optionally masquerade as said
+              robot.</p></li><li><p><span class="bold"><strong>most-favored-set</strong></span></p><p>Same as 4, but limit the robots whose rules we can follow
+              to a given set.</p></li></ol></div><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Choosing options 3-5 requires setting additional information
+            in the fields below the policy combobox. For options 1 and 2 those
+            can be ignored.</p></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1083A"></a>6.3.2.&nbsp;Scope settings</h4></div></div></div><p>The different scopes do share a few common settings. (See <a href="config.html#scopes" title="6.1.1.&nbsp;Crawl Scope">Section&nbsp;6.1.1, &ldquo;Crawl Scope&rdquo;</a> for more on scopes provided with Heritrix.)</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>max-link-hops</strong></span></p><p>Maximum number of links followed to get to the current URI.
+            Basically counts 'L's in the <a href="glossary.html#discoverypath">Discovery path</a>.</p></li><li><p><span class="bold"><strong>max-trans-hops</strong></span></p><p>Maximum number of non link hops at the end of the current
+            URI's <a href="glossary.html#discoverypath">Discovery path</a>. Generally we don't want to
+            follow embeds, redirects and the like for more than a few (default
+            5) hops in a row. Such deep embedded structures are usually
+            crawler traps. Since embeds are usually treated with higher
+            priority then links, getting stuck in this type of trap can be
+            particularly harmful to the crawl.</p></li></ul></div><p>Additionally scopes may possess many more settings, depending on
+        what filters are attached to them. See the related pop-up help in the
+        WUI for information on those.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10859"></a>6.3.3.&nbsp;Frontier settings</h4></div></div></div><p>The Frontier provided with Heritrix has a few settings of
+        particular interest.</p><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1085E"></a>6.3.3.1.&nbsp;Politeness</h5></div></div></div><p>A combination of four settings controls the politeness of the
+          Frontier. Before we cover them it is important to note that at any
+          given time only one URI from any given <a href="glossary.html#host">Host</a> is
+          being processed. The following politeness rules all revolve around
+          imposing additional wait time between the end of processing one URI
+          and until the next one starts.</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>delay-factor</strong></span></p><p>Imposes a delay between URIs from the same host that is a
+              multiple of the amount of time it took to fetch the last URI
+              downloaded from that host.</p><p>For example if it took 800 milliseconds to fetch the last
+              URI from a host and the delay-factor is 5 (a very high value)
+              then the Frontier will wait 4000 milliseconds (4 seconds) before
+              allowing another URI from that host to be processed.</p><p>This value can be set to 0 for maximum impoliteness. It is
+              never possible to have multiple concurrent URIs being processed
+              from the same host.</p></li><li><p><span class="bold"><strong>max-delay-ms</strong></span></p><p>This setting allows the user to set a maximum upper limit
+              on the 'in between URIs' wait created by the delay factor. If
+              set to 1000 milliseconds then in the example used above the
+              Frontier would only hold URIs from that host for 1 second
+              instead of 4 since the delay factor exceeded this ceiling
+              value.</p></li><li><p><span class="bold"><strong>min-delay-ms</strong></span></p><p>Similar to the maximum limit, this imposes a minimum limit
+              to the politeness. This can be useful to ensure, for example,
+              that at least 100 milliseconds elapse between connections to the
+              same host. In a case where the delay factor is 2 and it only
+              took 20 milliseconds to get a URI this would come into
+              effect.</p></li><li><p><span class="bold"><strong>min-interval-ms</strong></span></p><p>An alternate way of putting a floor on the delay, this
+              specifies the minimum number of milliseconds that must elapse
+              from the <span class="emphasis"><em>start of processing </em></span>one URI until
+              the next one after it starts. This can be useful in cases where
+              sites have a mix of large files that take an excessive amount of
+              time and very small files that take virtually no time.</p><p>In all cases (this can vary from URI to URI) the more
+              restrictive (delaying) of the two floor values is
+              imposed.</p></li></ul></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1088C"></a>6.3.3.2.&nbsp;Retry policy</h5></div></div></div><p>The Frontier imposes a policy on retrying URIs that
+          encountered errors that usually are transitory (socket timeouts
+          etc.) . Fetcher processors may also have their own policies on
+          certain aspects of this.</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>max-retries</strong></span></p><p>How often to retry URIs that encounter possible transient
+              errors.</p></li><li><p><span class="bold"><strong>retry-delay-seconds</strong></span></p><p>How long to wait between such retries.</p></li></ul></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N108A0"></a>6.3.3.3.&nbsp;Bandwidth limits</h5></div></div></div><p>The Frontier allows the user to limit bandwidth usage. This is
+          done by holding back URIs when bandwidth usage has exceeded limits.
+          As a result individual spikes of bandwidth usage can occur that
+          greatly exceed this limit. This only limits overall bandwidth usage
+          over a longer period of time (minutes).</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>total-bandwidth-usage-KB-sec</strong></span></p><p>Maximum bandwidth to use in Kilobytes per second.</p></li><li><p><span class="bold"><strong>max-per-host-bandwidth-usage-KB-sec</strong></span></p><p>Maximum bandwidth to use in dealing with any given host.
+              This is a form of politeness control as it limits the load
+              Heritrix places on a host.</p></li></ul></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N108B4"></a>6.3.4.&nbsp;Processors settings</h4></div></div></div><p>A couple of the provided processors have settings that merit
+        some extra attention.</p><p>As has been noted elsewhere each processor has a setting named
+        <span class="bold"><strong>enabled</strong></span>. This is set to true by
+        default, but can be set to false to effectively remove it from
+        consideration. Processors whose enabled setting is set to false will
+        not be applied to any applicable URI (this is of greatest use in
+        overrides and refinements).</p><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N108BF"></a>6.3.4.1.&nbsp;HTTP Fetcher</h5></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>timeout-seconds</strong></span></p><p>If a fetch is not completed within this many seconds, the
+              HTTP fetcher will terminate it.</p><p>Should generally be set quite high.</p></li><li><p><span class="bold"><strong>max-length-bytes</strong></span></p><p>Maximum number of bytes to download per document. Will
+              truncate file once this limit is reached.</p><p>By default this value is set to an extremely large value
+              (in the exabyte range) that will never be reached in
+              practice.</p></li></ul></div><p><a name="midfetch"></a>Its also possible to add in filters that are
+          checked after the download of the HTTP response headers but before
+          the response content is read. Use
+          <code class="literal">midfetch-filters</code> to abort the download of
+          content-types other than those wanted (Aborted fetches have an
+          annotation <code class="literal">midFetchAbort</code> appended to the
+          <code class="literal">crawl.log</code> entry). Note that unless the same
+          filters are applied at the writer processing step, the response
+          headers -- but not the content -- will show in ARC files.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N108E4"></a>6.3.4.2.&nbsp;Archiver</h5></div></div></div><p>The ARC writer processor can be configured somewhat. This
+          mostly relates to how the ARC files are written to disk.</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>compress</strong></span></p><p>Write compressed ARC files true or false.<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Each item that is added to the ARC file will be
+                  compressed individually.</p></div></p></li><li><p><span class="bold"><strong>prefix</strong></span></p><p>A prefix to the ARC files filename. See <a href="outside.html#arcfiles" title="9.1.9.&nbsp;ARC files">Section&nbsp;9.1.9, &ldquo;ARC files&rdquo;</a> for more on ARC file naming.</p></li><li><p><span class="bold"><strong>max-size-bytes</strong></span></p><p>Maximum size per ARC file. Once this size is reached no
+              more documents will be added to an ARC file, another will be
+              created to continue the crawl. This is of course not a hard
+              limit and the last item added to an ARC file will push its size
+              above this limit. If exceptionally large items are being
+              downloaded the size of an ARC file may exceed this value by a
+              considerable amount since items will never be split between ARC
+              files.</p></li><li><p><span class="bold"><strong>path</strong></span></p><p>Path where ARC files should be written. Can be a list of
+              absolute paths. If relative paths, will be relative to the
+              <code class="literal">job</code>directory. It can be safely configured
+              mid-crawl to point elsewhere if current location is close to
+              full. If multiple paths, then we'll choose from the list of
+              paths in a round-robin fashion.</p></li><li><p><span class="bold"><strong>pool-max-active</strong></span></p><p>The Archiver maintains a pool of ARC files which are each
+              ready to accept a downloaded documents, to prevent ARC writing
+              from being a bottleneck in multithreaded operation. This setting
+              establishes the maximum number of such files to keep ready.
+              Default is 5. For small crawls that you want to confine to a
+              single ARC file, this should be set to 1.</p></li><li><p><span class="bold"><strong>pool-max-wait</strong></span></p><p>The maximum amount of time to wait on the Archiver's pool
+              element.</p></li></ul></div></div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="overrides"></a>6.4.&nbsp;Overrides</h3></div></div></div><p>Overrides provide the ability to override individual settings on a
+      per domain basis. The overrides page provides an iterative list of
+      domains that contain override settings, that is values for parameters
+      that override values in the global configuration.</p><p>It is best to think of the general global settings as the root of
+      the settings hierarchy and they are then overridden by top level domains
+      (com, net, org, etc) who are in turn overridden by domains (yahoo.com,
+      archive.org, etc.) who can further be overridden by subdomains
+      (crawler.archive.org). There is no limit for how deep into the
+      subdomains the overrides can go.</p><p>When a URI is being processed the settings for its host is first
+      looked up. If the needed setting is not available there, its super
+      domains are checked until the setting is found (all settings exist at
+      the global level at the very least).</p><p>Creating a new override is done by simply typing in the domain in
+      the input box at the bottom of the page and clicking the
+      <span class="emphasis"><em>Create / Edit</em></span> button. Alternatively if overrides
+      already exist the user can navigate the hierarchy of existing overrides,
+      edit them and create new overrides on domains that don't already have
+      them.</p><p>Once an override has been created or selected for editing the user
+      is taken to a page that closely resembles the settings page discussed in
+      <a href="config.html#settings" title="6.3.&nbsp;Settings">Section&nbsp;6.3, &ldquo;Settings&rdquo;</a>. The main difference is that those settings
+      that can not be overridden (file locations, number of threads etc.) are
+      printed in a non-editable manner. Those settings that can be edited now
+      have a checkbox in front of them. If they are being overridden at the
+      current level that checkbox should be checked. Editing a setting will
+      cause the checkmark to appear. Removing the checkmark effectively
+      removes the override on that setting.</p><p>Once on the settings page the second level tabs will change to
+      override context. The new tabs will be similar to the general tabs and
+      will have:</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>URL</strong></span></p><p>Add URL Canonicalization Rules to the override. It is not
+          possible to remove inherited filters or interject new filters among
+          them. New filters will be added after existing filters.</p></li><li><p><span class="bold"><strong>Filters</strong></span></p><p>Add filters to the override. It is not possible to remove
+          inherited filters or interject new filters among them. New filters
+          will be added after existing filters.</p><p>Inherited filters though have the option to locally disable
+          them. That can be set on the settings page.</p></li><li><p><span class="bold"><strong>Credentials</strong></span></p><p>Add credentials to the override. Generally credentials should
+          always be added to an override of the domain most relevant to them.
+          See <a href="config.html#credentials" title="6.2.3.&nbsp;Credentials">Section&nbsp;6.2.3, &ldquo;Credentials&rdquo;</a> for more details.</p></li><li><p><span class="bold"><strong>Settings</strong></span></p><p>Page allowing the user to override specific settings as
+          discussed above.</p></li><li><p><span class="bold"><strong>Refinements</strong></span></p><p>Manage refinements for the override. See <a href="config.html#refinements" title="6.5.&nbsp;Refinements">Section&nbsp;6.5, &ldquo;Refinements&rdquo;</a></p></li><li><p><span class="bold"><strong>Done with override</strong></span></p><p>Once the user has finished with the override, this option will
+          take him back to the overrides overview page.</p></li></ul></div><p>It is not possible to add, remove or reorder existing modules on
+      an override. It is only possible to add filters and credentials. Those
+      added will be inherited to sub domains of the current override domain.
+      Those modules that are added in an override will not have a checkbox in
+      front of their settings on the override settings page since the override
+      is effectively their 'root'.</p><p>Finally, due to how the settings framework is structured there is
+      negligible performance penalty to using overrides. Lookups for settings
+      take as much time whether or not overrides have been defined. For URIs
+      belonging to domains without overrides no performance penalty is
+      incurred.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="refinements"></a>6.5.&nbsp;Refinements</h3></div></div></div><p>Refinements are similar to overrides (see <a href="config.html#overrides" title="6.4.&nbsp;Overrides">Section&nbsp;6.4, &ldquo;Overrides&rdquo;</a>) in that they allow the user to modify the
+      settings under certain circumstances. There are however two major
+      differences.</p><div class="orderedlist"><ol type="1"><li><p>Refinements are applied based on arbitrary criteria rather
+          then encountered URIs domain.</p><p>Currently it is possible to set criteria based on the time of
+          day, a regular expression matching the URI and the port number of
+          the URI.</p></li><li><p>They incur a performance penalty.</p><p>This effect is small if their numbers are few but for each URI
+          encountered there must be a check made to see if it matches any of
+          the existing criteria of defined refinements.</p><p>This effect can be mitigated by applying refinements to
+          overrides rather then the global settings.</p></li></ol></div><p>Refinements can be applied either to the global settings or to any
+      override. If applied to an override they can affect any settings,
+      regardless of whether the parent override has modified it.</p><p>It is not possible to create refinements on refinements.</p><p>Clicking the <span class="emphasis"><em>Refinements</em></span> tab on either the
+      global settings or an override brings the user to the refinements
+      overview page. The overview page displays a list of existing refinements
+      on the current level and allows the user to create new ones.</p><p>To create a new refinement the user must supply a unique name for
+      it (name is limited to letters, numbers, dash and underscore) and a
+      short description that will be displayed underneath it on the overview
+      page.</p><p>Once created, refinements can be either removed or edited.</p><p>Choosing the edit option on an override brings the user to the
+      criteria page. Aside from the criteria tab replacing the refinements
+      tab, the second level tabs will have the same options as they do for
+      overrides and their behavior will be the same. Clicking the 'Done with
+      refinement' tab will bring the user back to the refinements overview
+      page.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10991"></a>6.5.1.&nbsp;Criteria</h4></div></div></div><p>The criteria page displays a list of the current criteria and
+        the option to add any of the available criteria types to the list. It
+        is also possible to remove existing criteria.</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>URIs must match <span class="bold"><strong>all</strong></span> set
+          criteria for the refinement to take effect.</p></div><p>Currently the following criteria can be applied:</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>Port number</strong></span></p><p>Match only those URIs for the given port number.</p><p>Default port number for HTTP is 80 and 443 for HTTPS.</p></li><li><p><span class="bold"><strong>Time of day</strong></span></p><p>If this criteria is applied the refinement will be in effect
+            between the hours specified each day.</p><p>The format for the input boxes is HHMM (hours and
+            minutes).</p><p>An example might be: From 0200, To 0600. This refinement
+            would be in effect between 2 and 6 am each night. Possibly to ease
+            the politeness requirements during these hours when load on
+            websites is generally low.<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>As with all times in Heritrix these are <span class="bold"><strong>always GMT</strong></span> times.</p></div></p></li><li><p><span class="bold"><strong>Regular expression</strong></span></p><p>The refinement will only be in effect for those URIs that
+            match the given regular expression.<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>See <a href="glossary.html#regexpr">Regular expressions</a> for more on them.</p></div></p></li></ul></div></div></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="creating.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="running.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">5.&nbsp;Creating jobs and profiles&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;7.&nbsp;Running a job</td></tr></table></div></body></html>

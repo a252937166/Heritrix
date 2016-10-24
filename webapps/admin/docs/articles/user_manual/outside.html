@@ -1,0 +1,315 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>9.&nbsp;Outside the user interface</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix User Manual"><link rel="up" href="index.html" title="Heritrix User Manual"><link rel="prev" href="analysis.html" title="8.&nbsp;Analysis of jobs"><link rel="next" href="usecases.html" title="A.&nbsp;Common Heritrix Use Cases"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">9.&nbsp;Outside the user interface</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="analysis.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="usecases.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="outside"></a>9.&nbsp;Outside the user interface</h2></div></div></div><p>While it is possible to do a great many things via Heritrix's WUI it
+    is worth taking a look at some of what is not available in it.</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10CFA"></a>9.1.&nbsp;Generated files</h3></div></div></div><p>In addition to the logs discussed above (see <a href="analysis.html#logs" title="8.2.&nbsp;Logs">Section&nbsp;8.2, &ldquo;Logs&rdquo;</a>) the following files are generated. Some of the
+      information in them is also available via the WUI.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D02"></a>9.1.1.&nbsp;heritrix_out.log</h4></div></div></div><p>Captures what is written to the standard out and standard error
+        streams of the program. Mostly this consists of low level exceptions
+        (usually indicative of bugs) and also some information from third
+        party modules who do their own output logging.</p><p>This file is created in the same directory as the Heritrix JAR
+        file. It is not associated with any one job, but contains output from
+        all jobs run by the crawler.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="crawl-manifest.txt"></a>9.1.2.&nbsp;crawl-manifest.txt</h4></div></div></div><p>A manifest of all files (excluding ARC and other data files)
+        created while crawling a job.</p><p>An example of this file might be:</p><p><pre class="programlisting">  L+ /Heritrix/jobs/quickbroad-20040420191411593/disk/crawl.log
+  L+ /Heritrix/jobs/quickbroad-20040420191411593/disk/runtime-errors.log
+  L+ /Heritrix/jobs/quickbroad-20040420191411593/disk/local-errors.log
+  L+ /Heritrix/jobs/quickbroad-20040420191411593/disk/uri-errors.log
+  L+ /Heritrix/jobs/quickbroad-20040420191411593/disk/progress-statistics.log
+  L- /Heritrix/jobs/quickbroad-20040420191411593/disk/recover.gz
+  R+ /Heritrix/jobs/quickbroad-20040420191411593/disk/seeds-report.txt
+  R+ /Heritrix/jobs/quickbroad-20040420191411593/disk/hosts-report.txt
+  R+ /Heritrix/jobs/quickbroad-20040420191411593/disk/mimetype-report.txt
+  R+ /Heritrix/jobs/quickbroad-20040420191411593/disk/responsecode-report.txt
+  R+ /Heritrix/jobs/quickbroad-20040420191411593/disk/crawl-report.txt
+  R+ /Heritrix/jobs/quickbroad-20040420191411593/disk/processors-report.txt
+  C+ /Heritrix/jobs/quickbroad-20040420191411593/job-quickbroad.xml
+  C+ /Heritrix/jobs/quickbroad-20040420191411593/settings/org/settings.xml
+  C+ /Heritrix/jobs/quickbroad-20040420191411593/seeds-quickbroad.txt</pre></p><p>The first character of each line indicates the type of file. L
+        for logs, R for reports and C for configuration files.</p><p>The second character - a plus or minus sign - indicates if the
+        file should be included in a standard bundle of the job (see <a href="outside.html#manifest_bundle.pl" title="9.2.1.&nbsp;manifest_bundle.pl">Section&nbsp;9.2.1, &ldquo;manifest_bundle.pl&rdquo;</a>). In the example above the
+        <code class="literal">recover.gz</code> is marked for exclusion because it is
+        generally only of interest if the job crashes and must be restarted.
+        It has negligible value once the job is completed (See <a href="outside.html#recover" title="9.3.&nbsp;Recovery of Frontier State and recover.gz">Section&nbsp;9.3, &ldquo;Recovery of Frontier State and recover.gz&rdquo;</a>).</p><p>After this initial legend the filename with full path
+        follows.</p><p>This file is generated in the directory indicated by the
+        '<span class="emphasis"><em>disk</em></span>' attribute of the configuration at the very
+        end of the crawl.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D2A"></a>9.1.3.&nbsp;crawl-report.txt</h4></div></div></div><p>Contains some useful metrics about the completed jobs. This
+        report is created by the <code class="literal">StatisticsTracker</code> (see
+        <a href="config.html#stattrack" title="6.1.4.&nbsp;Statistics Tracking">Section&nbsp;6.1.4, &ldquo;Statistics Tracking&rdquo;</a>)</p><p>Written at the very end of the crawl only. See
+        <code class="literal">crawl-manifest.txt</code> for its location.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D3C"></a>9.1.4.&nbsp;hosts-report.txt</h4></div></div></div><p>Contains an overview of what hosts were crawled and how many
+        documents and bytes were downloaded from each.</p><p>This report is created by the
+        <code class="literal">StatisticsTracker</code> (see <a href="config.html#stattrack" title="6.1.4.&nbsp;Statistics Tracking">Section&nbsp;6.1.4, &ldquo;Statistics Tracking&rdquo;</a>) and is written at the very end of the crawl
+        only. See <code class="literal">crawl-manifest.txt</code> for its
+        location.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D4E"></a>9.1.5.&nbsp;mimetype-report.txt</h4></div></div></div><p>Contains on overview of the number of documents downloaded per
+        mime type. Also has the amount of data downloaded per mime
+        type.</p><p>This report is created by the
+        <code class="literal">StatisticsTracker</code> (see <a href="config.html#stattrack" title="6.1.4.&nbsp;Statistics Tracking">Section&nbsp;6.1.4, &ldquo;Statistics Tracking&rdquo;</a>) and is written at the very end of the crawl
+        only. See <code class="literal">crawl-manifest.txt</code> for its
+        location.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="processorsreport.txt"></a>9.1.6.&nbsp;processors-report.txt</h4></div></div></div><p>Contains the processors report (see <a href="running.html#processorsreport" title="7.3.1.3.&nbsp;Processors report">Section&nbsp;7.3.1.3, &ldquo;Processors report&rdquo;</a>) generated at the very end of the
+        crawl.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D69"></a>9.1.7.&nbsp;responsecode-report.txt</h4></div></div></div><p>Contains on overview of the number of documents downloaded per
+        status code (see <a href="glossary.html#statuscodes">Status codes</a>), covers successful
+        codes only, does not tally failures, see <code class="literal">crawl.log</code>
+        for that information.</p><p>This report is created by the
+        <code class="literal">StatisticsTracker</code> (see <a href="config.html#stattrack" title="6.1.4.&nbsp;Statistics Tracking">Section&nbsp;6.1.4, &ldquo;Statistics Tracking&rdquo;</a>) and is written at the very end of the crawl
+        only. See <code class="literal">crawl-manifest.txt</code> for its
+        location.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10D82"></a>9.1.8.&nbsp;seeds-report.txt</h4></div></div></div><p>An overview of the crawling of each seed. Did it succeed or not,
+        what status code was returned.</p><p>This report is created by the
+        <code class="literal">StatisticsTracker</code> (see <a href="config.html#stattrack" title="6.1.4.&nbsp;Statistics Tracking">Section&nbsp;6.1.4, &ldquo;Statistics Tracking&rdquo;</a>) and is written at the very end of the crawl
+        only. See <code class="literal">crawl-manifest.txt</code> for its
+        location.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="arcfiles"></a>9.1.9.&nbsp;ARC files</h4></div></div></div><p>Assuming that you are using the ARC writer that comes with
+        Heritrix a number of ARC files will be generated containing the
+        crawled pages.</p><p>It is possible to specify the location of these files on the
+        ARCWriter processor in settings page. Unless this is set as an
+        absolute path this is a path relative to the <span class="emphasis"><em>job</em></span>
+        directory.</p><p>ARC files are named as follows:</p><p><pre class="programlisting">  [prefix]-[12-digit-timestamp]-[series#-padded-to-5-digits]-[crawler-hostname].arc.gz</pre></p><p>The <code class="literal">prefix</code> is set by the user when he
+        configures the ARCWriter processor. By default it is IAH.</p><p>If you see an ARC file with an extra <code class="literal">.open</code>
+        suffix, this means the ARC is currently in use being written to by
+        Heritrix (It usually has more than one ARC open at a time).</p><p><a name="invalid"></a>Files with a <code class="literal">.invalid</code> are files
+        Heritrix had trouble writing to (Disk full, bad disk, etc.). On
+        IOException, Heritrix closes the problematic ARC and gives it the
+        <code class="literal">.invalid</code> suffix. These files need to be checked for
+        coherence.</p><p>For more on ARC files refer to the <a href="http://crawler.archive.org/apidocs/org/archive/io/arc/ARCWriter.html" target="_top">ARCwriter
+        Javadoc</a> and to the <a href="http://crawler.archive.org/articles/developer_manual/arcs.html" target="_top">ARC
+        Writer developer documentation</a>.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10DC6"></a>9.2.&nbsp;Helpful scripts</h3></div></div></div><p>Heritrix comes bundled with a few helpful scripts for
+      Linux.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="manifest_bundle.pl"></a>9.2.1.&nbsp;manifest_bundle.pl</h4></div></div></div><p>This script will bundle up all resources referenced by a crawl
+        manifest file (<a href="outside.html#crawl-manifest.txt" title="9.1.2.&nbsp;crawl-manifest.txt">Section&nbsp;9.1.2, &ldquo;crawl-manifest.txt&rdquo;</a>). Output bundle
+        is an uncompressed or compressed tar ball. Directory structure created
+        in the tar ball is as follow:</p><div class="itemizedlist"><ul type="disc"><li><p>Top level directory (crawl name)</p></li><li><p>Three default subdirectories (configuration, logs and
+            reports directories)</p></li><li><p>Any other arbitrary subdirectories</p></li></ul></div><p>Usage:<pre class="programlisting">  manifest_bundle.pl crawl_name manifest_file [-f output_tar_file] [-z] [ -flag directory]
+      -f output tar file. If omitted output to stdout.
+      -z compress tar file with gzip.
+      -flag is any upper case letter. Default values C, L, and are R are set to
+       configuration, logs and reports</pre></p><p>Example:<pre class="programlisting">  manifest_bundle.pl testcrawl crawl-manifest.txt -f    \
+        /0/testcrawl/manifest-bundle.tar.gz -z -F filters</pre></p><p>Produced tar ball for this example:<pre class="programlisting">  /0/testcrawl/manifest-bundle.tar.gz</pre>Bundled
+        directory structure for this example:<pre class="programlisting">  |-testcrawl
+      |- configurations
+      |- logs
+      |- reports
+      |- filters</pre></p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="hoppath"></a>9.2.2.&nbsp;hoppath.pl</h4></div></div></div><p>This perl script, found in $HERITRIX_HOME/bin recreates the hop
+        path to the specified url. The hop path is a path of links (URLs) that
+        we followed to get to the specified url.</p><p>Usage:<pre class="programlisting">Usage: hoppath.pl crawl.log URI_PREFIX
+  crawl.log    Full-path to Heritrix crawl.log instance.
+  URI_PREFIX   URI we're querying about. Must begin 'http(s)://' or 'dns:'.
+               Wrap this parameter in quotes to avoid shell interpretation
+               of any '&amp;' present in URI_PREFIX.</pre></p><p>Example:<pre class="programlisting">% hoppath.pl crawl.log 'http://www.house.gov/'</pre></p><p>Result:<pre class="programlisting">  2004-02-25-02-36-06 - http://www.house.gov/house/MemberWWW_by_State.html
+  2004-02-25-02-36-06   L http://wwws.house.gov/search97cgi/s97_cgi
+  2004-02-25-03-30-38    L http://www.house.gov/</pre></p><p>The L in the above example refers to the type of link followed
+        (see <a href="glossary.html#discoverypath">Discovery path</a>).</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="recoverylogmapper"></a>9.2.3.&nbsp;RecoverLogMapper</h4></div></div></div><p><code class="literal">org.archive.crawler.util.RecoveryLogMapper</code> is
+        similar to <a href="outside.html#hoppath" title="9.2.2.&nbsp;hoppath.pl">Section&nbsp;9.2.2, &ldquo;hoppath.pl&rdquo;</a>. It was contributed by Mike
+        Schwartz. RecoverLogMapper parses a Heritrix recovery log file, (See
+        <a href="outside.html#recover" title="9.3.&nbsp;Recovery of Frontier State and recover.gz">Section&nbsp;9.3, &ldquo;Recovery of Frontier State and recover.gz&rdquo;</a>), and builds maps that allow a caller to
+        look up any seed URL and get back an Iterator of all URLs successfully
+        crawled from given seed. It also allows lookup on any crawled URL to
+        find the seed URL from which the crawler reached that URL (through 1
+        or more discovered URL hops, which are collapsed in this
+        lookup).</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="jmxclient"></a>9.2.4.&nbsp;cmdline-jmxclient</h4></div></div></div><p>This jar file is checked in as a script. It enables command-line
+        control of Heritrix if Heritrix has been started up inside of a SUN
+        1.5.0 JDK. See the <a href="http://crawler.archive.org/cmdline-jmxclient/" target="_top">cmdline-jmxclient
+        project</a> to learn more about this script's capabilities and how
+        to use it. See also <a href="outside.html#mon_com" title="9.5.&nbsp;Remote Monitoring and Control">Section&nbsp;9.5, &ldquo;Remote Monitoring and Control&rdquo;</a>.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="recover"></a>9.3.&nbsp;Recovery of Frontier State and recover.gz</h3></div></div></div><p>During normal running, the Heritrix Frontier by default keeps a
+      journal. The journal is kept in the jobs logs directory. Its named
+      <code class="literal">recover.gz</code>. If a crawl crashes, the recover.gz
+      journal can be used to recreate approximately the status of the crawler
+      at the time of the crash. Recovery can take a long time in some cases,
+      but is usually much quicker then repeating a crawl.</p><p>To run the recovery process, relaunch the crashed crawler. Create
+      a new crawl order job based on the crawl that crashed. If you choose the
+      "recover-log" link from the list of completed jobs in the 'Based on
+      recovery' page, the new job will automatically be set up to use the
+      original job's recovery journal to bootstrap its Frontier state (of
+      completed and queued URIs). Further, if the recovered job attempts to
+      reuse any already-full 'logs' or 'state' directories, new paths for
+      these directories will be chosen with as many '-R' suffixes as are
+      necessary to specify a new empty directory.</p><p>(If you simply base your new job on the old job without using the
+      'Recover' link, you must manually enter the full path of the original
+      crawl's recovery journal into the <code class="literal">recover-path</code>
+      setting, near the end of all settings. You must also adjust the 'logs'
+      and 'state' directory settings, if they were specified using absolute
+      paths that would cause the new crawl to reuse the directories of the
+      original job.)</p><p>After making any further adjustments to the crawl settings, submit
+      the new job. The submission will hang a long time as the recover.gz file
+      is read in its entirety by the frontier. (This can take hours for a
+      crawl that has run for a long time, and during this time the crawler
+      control panel will appear idle, with no job pending or in progress, but
+      the machine will be busy.) Eventually the submit and crawl job launche
+      should complete. The crawl should pick up from close to where the crash
+      occurred. There is no marking in the logs that this crawl was started by
+      reading a recover log (Be sure to mark this was done in the crawl
+      journal).</p><p>The recovery log is gzipped because it gets very large otherwise
+      and because of the reptition of terms, it compresses very well. On
+      abnormal termination of the crawl job, if you look at the recover.gz
+      file with gzip, gzip will report <code class="literal">unexpected end of
+      file</code> if you try to ungzip it. Gzip is complaining that the
+      file write was abnormally terminated. But the recover.gz file will be of
+      use restoring the frontier at least to where the gzip file went bad
+      (Gzip zips in 32k blocks; the worst loss would be the last 32k of
+      gzipped data).</p><p>Java's Gzip support (up through at least Java 1.5/5.0) can
+      compress arbitrarily large input streams, but has problems when
+      decompressing any stream to output larger than 2GB. When attempting to
+      recover a crawl that has a recovery log that, when uncompressed, would
+      be over 2GB, this will trigger a FatalConfigurationException alert, with
+      detail message "Recover.log problem: java.io.IOException: Corrupt GZIP
+      trailer". Heritrix will accept either compressed or uncompressed
+      recovery log files, so a workaround is to first uncompress the recovery
+      log using another non-Java tool (such as the 'gunzip' available in Linux
+      and Cygwin), then refer to this uncompressed recovery log when
+      recovering. (Reportedly, Java 6.0 "Mustang" will fix this Java bug with
+      un-gzipping large files.)</p><p>See also below, the related recovery facility, <a href="outside.html#checkpoint" title="9.4.&nbsp;Checkpointing">Section&nbsp;9.4, &ldquo;Checkpointing&rdquo;</a>, for an alternate recovery mechanism.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="checkpoint"></a>9.4.&nbsp;Checkpointing</h3></div></div></div><p>Checkpointing [<a href="glossary.html#checkpointing">Checkpointing</a>], the crawler
+      writes a representation of current state to a directory under
+      <code class="literal">checkpoints-path</code>, named for the checkpoint.
+      Checkpointed state includes serialization of main crawler objects,
+      copies of current set of bdbje log files, etc. The idea is that the
+      checkpoint directory contains all that is required recovering a crawler.
+      Checkpointing also rotates off the crawler logs including the
+      <code class="literal">recover.gz</code> log, if enabled. Log files are NOT copied
+      to the checkpoint directory. They are left under the logs directory but
+      are distingushed by a suffix. The suffix is the checkpoint name (e.g.
+      <code class="literal">crawl.log.000031</code> where <code class="literal">000031</code> is
+      the checkpoint name).</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Currently, only the BdbFrontier using the bdbje-based
+        already-seen or the bloom filter already-seen is
+        checkpointable.</p></div><p>To run a checkpoint, click the checkpoint button in the UI or
+      invoke <code class="literal">checkpoint</code> from JMX. This launches a thread to
+      run through the following steps: If crawling, pause the crawl; run
+      actual checkpoint; if was crawling when checkpoint was invoked, resume
+      the crawl. Dependent on the size of the crawl, checkpointing can take
+      some time; often the step that takes longest is pausing the crawl,
+      waiting on threads to get into a paused, checkpointable state. While
+      checkpointing, the status will show as <code class="literal">CHECKPOINTING</code>.
+      When the checkpoint has completed -- the crawler will resume crawling
+      (Of if in PAUSED state when checkpointing was invoked, will return to
+      the PAUSED state).</p><p>Recovery from a checkpoint has much in common with the recovery of
+      a crawl using the recover.log (See ???. To
+      recover, create a job. Then before launching, set the
+      <code class="literal">crawl-order/recover-path</code> to point at the checkpoint
+      directory you want to recover from. Alternatively, browse to the
+      <code class="literal">Jobs-&gt;Based on a recovery</code> screen and select the
+      checkpoint you want to recover from. After clicking, a new job will be
+      created that takes the old jobs' (end-of-crawl) settings and autofills
+      the recover-path with the right directory-path (The renaming of logs and
+      <code class="literal">crawl-order/state-path</code> "state" dirs so they do not
+      clash with the old as is described above in <a href="outside.html#recover" title="9.3.&nbsp;Recovery of Frontier State and recover.gz">Section&nbsp;9.3, &ldquo;Recovery of Frontier State and recover.gz&rdquo;</a>
+      is also done). The first thing recover does is copy into place the
+      saved-off bdbje log files. Again, recovery can take time -- an hour or
+      more if a crawl of millions.</p><p>Checkpointing is currently experimental. The recover-log technique
+      is tried-and-true. Once checkpointing is proven reliable, faster, and
+      more comprehensive, it will become the preferred method recovering a
+      crawler).</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10E84"></a>9.4.1.&nbsp;Expert mode: Fast checkpointing</h4></div></div></div><p>The bulk of the time checkpointing is taken up copying off the
+        bdbje logs. For example, checkpointing a crawl that had downloaded
+        18million items -- it had discovered &gt; 130million (bloom filter) --
+        the checkpointing took about 100minutes to complete of which 90 plus
+        minutes were spent copying the ~12k bdbje log files (One disk only
+        involved). Set log level on
+        <code class="literal">org.archive.util.FileUtils</code> to FINE to watch the
+        java bdbje log file-copy.</p><p>Since copying off bdbje log files can take hours, we've added an
+        <span class="emphasis"><em>expert mode</em></span> checkpoint that bypasses bdbje log
+        copying. The upside is your checkpoint completes promptly -- in
+        minutes, even if the crawl is large -- but downside is recovery takes
+        more work: to recover from a checkpoint, the bdbje log files need to
+        be manually assembled in the checkpoint <code class="literal">bdb-logs</code>
+        subdirectory. You'll know which bdbje log files make up the checkpoint
+        because Heritrix writes the checkpoint list of bdbje logs into the
+        checkpoint directory to a file named
+        <code class="literal">bdbj-logs-manifest.txt</code>. To prevent bdbje removing
+        log files that might be needed assembling a checkpoint made at
+        sometime in the past, when running expert mode checkpointing, we
+        configure bdbje not to delete logs when its finished with them;
+        instead, bdbje gives logs its no longer using a
+        <code class="literal">.del</code> suffix. Assembling a checkpoint will often
+        require renaming files with the <code class="literal">.del</code> suffix so they
+        have the <code class="literal">.jdb</code> suffix in accordance with the
+        <code class="literal">bdbj-logs-manifest.txt</code> list (See below for more on
+        this).</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>With this expert mode enabled, the crawler
+          <code class="literal">crawl-order/state-path</code> "state" directory will
+          grow without bound; a process external to the crawler can be set to
+          prune the state directory of <code class="literal">.del</code> files
+          referenced by checkpoints since superceded).</p></div><p>To enable the no-files copy checkpoint, set the new expert mode
+        setting <code class="literal">checkpoint-copy-bdbje-logs</code> to
+        <code class="literal">false</code>.</p><p>To recover using a checkpoint that has all but the bdbje log
+        files present, you will need to copy all logs listed in
+        <code class="literal">bdbj-logs-manifest.txt</code> to the
+        <code class="literal">bdbje-logs</code> checkpoint subdirectory. In some cases
+        this will necessitate renaming logs with the <code class="literal">.del</code>
+        to instead have the <code class="literal">.jdb</code> ending as suggested above.
+        One thing to watch for is copying too many logs into the bdbje logs
+        subdirectory. The list of logs must match exactly whats in the
+        manifest file. Otherwise, the recovery will fail (For example, see
+        <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1325961&group_id=73833&atid=539099" target="_top">[1325961]
+        resurrectOneQueueState has keys for items not in
+        allqueues</a>).</p><p>On checkpoint recovery, Heritrix copies bdbje log files from the
+        referenced checkpoint <code class="literal">bdb-logs</code> subdirectory to the
+        new crawl's <code class="literal">crawl-order/state-path</code> "state"
+        directory. As noted above, this can take some time. Of note, if a
+        bdbje log file already exists in the new crawls'
+        <code class="literal">crawl-order/state-path</code> "state" directory,
+        checkpoint recover will not overwrite the existing bdbje log file.
+        Exploit this property and save on recovery time by using native unix
+        <code class="literal">cp</code> to manually copy over bdbje log files from the
+        checkpoint directory to the new crawls'
+        <code class="literal">crawl-order/state-path</code> "state" directory before
+        launching a recovery (Or, at the extreme, though it will trash your
+        checkpoint, set the checkpoint's <code class="literal">bdb-logs</code>
+        subdirectory as the new crawls
+        <code class="literal">crawl-order/state-path</code> "state" directory).</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="automated_chkpt"></a>9.4.2.&nbsp;Automated Checkpointing</h4></div></div></div><p>To have Heritrix run a checkpoint on a period, uncomment (or
+        add) to <code class="literal">heritrix.properties</code> a line like:
+        <pre class="programlisting">org.archive.crawler.framework.Checkpointer.period = 2</pre>
+        This will install a Timer Thread that will run on an interval (Units
+        are in hours). See <code class="literal">heritrix_out.log</code> to see log of
+        installation of the timer thread that will run the checkpoint on a
+        period and to see log of everytime it runs (Assuming
+        <code class="literal">org.archive.crawler.framework.Checkpointer.level</code> is
+        set to INFO).</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="mon_com"></a>9.5.&nbsp;Remote Monitoring and Control</h3></div></div></div><p>As of release 1.4.0, Heritrix will start up the JVM's JMX Agent if
+      deployed in a SUN 1.5.0 JVM. It password protects the JMX Agent using
+      whatever was specified as the Heritrix admin password so to login,
+      you'll use 'monitorRole' or 'controlRole' for login and the Heritrix
+      admin password as password. By default, the JMX Agent is started up on
+      port 8849 (To change any of the JMX settings, set the JMX_OPTS
+      environment variable).</p><p>On startup, Heritrix looks if any JMX Agent running in current
+      context and registers itself with the first JMX Agent found publishing
+      attributes and operations that can be run remotely. If running in a SUN
+      1.5.0 JVM where the JVM JMX Agent has been started, Heritrix will attach
+      to the JVM JMX Agent (If running inside JBOSS, Heritrix will register
+      with the JBOSS JMX Agent).</p><p>To see what Attributes and Operations are available via JMX, use
+      the SUN 1.5.0 JDK jconsole application -- its in $JAVA_HOME/bin -- or
+      use <a href="outside.html#jmxclient" title="9.2.4.&nbsp;cmdline-jmxclient">Section&nbsp;9.2.4, &ldquo;cmdline-jmxclient&rdquo;</a>.</p><p>To learn more about the SUN 1.5.0 JDK JMX managements and
+      jconsole, see <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html" target="_top">Monitoring
+      and Management Using JMX</a>. This O'Reilly article is also a good
+      place for getting started : <a href="http://www.onjava.com/pub/a/onjava/2004/09/29/tigerjmx.html" target="_top">Monitoring
+      Local and Remote Applications Using JMX 1.2 and JConsole</a>.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="ftp_support"></a>9.6.&nbsp;Experimental FTP Support</h3></div></div></div><p>As of release 1.10.0, Heritrix has experimental support for
+      crawling FTP servers. To enable FTP support for your crawls, there is a
+      configuration file change you will have to manually make.</p><p>Specifically, you will have to edit the
+      <code class="filename">$HERITRIX_HOME/conf/heritrix.properties</code> file.
+      Remove <code class="literal">ftp</code> from the
+      <code class="literal">org.archive.net.UURIFactory.ignored-schemes</code> property
+      list. Also, you must add <code class="literal">ftp</code> to the
+      <code class="literal">org.archive.net.UURIFactory.schemes</code> property
+      list.</p><p>After that change, you should be able to add the FetchFTP
+      processor to your crawl using the Web UI. Just create a new job, click
+      "Modules", and add FetchFTP under "Fetchers."</p><p>Note that FetchFTP is a little unusual in that it works both as a
+      fetcher and as an extractor. If an FTP URI refers to a directory, and if
+      FetchFTP's <code class="literal">extract-from-dirs</code> property is set to true,
+      then FetchFTP will extract one link for every line of the directory
+      listing. Similarly, if the <code class="literal">extract-parent</code> property is
+      true, then FetchFTP will extract the parent directory from every FTP URI
+      it encounters.</p><p>Also, remember that FetchFTP is experimental. As of 1.10, FetchFTP
+      has the following known limitations:</p><div class="orderedlist"><ol type="1"><li>
+          FetchFTP can only store directories if the FTP server supports the 
+
+          <code class="literal">NLIST</code>
+
+           command. Some older systems may not support 
+
+          <code class="literal">NLIST</code>
+
+          .
+        </li><li>
+          Similarly, FetchFTP uses passive mode transfer, to work behind firewalls. Not all FTP servers support passive mode, however.
+        </li><li>
+          Heritrix currently has no means of determining the mime-type of a document unless an HTTP server explicitly mentions one. Since FTP has no concept of metadata, all documents retrieved using FetchFTP have a mime-type of 
+
+          <code class="literal">no-type</code>
+
+          . 
+        </li><li>
+          In the absence of a mime-type, many of the postprocessors will not work. For instance, HTMLExtractor will not extract links from an HTML file fetched with FetchFTP. 
+        </li></ol></div><p>Still, FetchFTP can be used to archive an FTP directory of
+      tarballs, for instance. If you discover any additional problems using
+      FetchFTP, please inform the
+      <code class="email">&lt;<a href="mailto:archive-crawler@yahoogroups.com">archive-crawler@yahoogroups.com</a>&gt;</code> mailing list.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10F66"></a>9.7.&nbsp;Duplication Reduction Processors</h3></div></div></div><p>Starting in release 1.12.0, a number of Processors can cooperate
+      to carry forward URI content history information between crawls,
+      reducing the amount of duplicate material downloaded or stored in later
+      crawls. For more information, see the project wiki's <a href="http://webteam.archive.org/confluence/display/Heritrix/Feature+Notes+-+1.12.0" target="_top">notes
+      on using the new duplication-reduction functionality</a>. </p></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="analysis.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="usecases.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">8.&nbsp;Analysis of jobs&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;A.&nbsp;Common Heritrix Use Cases</td></tr></table></div></body></html>

@@ -1,0 +1,99 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>5.&nbsp;Settings</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix developer documentation"><link rel="up" href="index.html" title="Heritrix developer documentation"><link rel="prev" href="overview.html" title="4.&nbsp;Overview of the crawler"><link rel="next" href="chap_modules_common.html" title="6.&nbsp;Common needs for all configurable modules"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">5.&nbsp;Settings</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="overview.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="chap_modules_common.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="settings"></a>5.&nbsp;Settings</h2></div></div></div><p>The settings framework is designed to be a flexible way to configure
+    a crawl with special treatment for subparts of the web without adding too
+    much performance overhead. If you want to write a module which should be
+    configurable through the user interface, it is important to have a basic
+    understanding of the Settings framework (for the impatient, have a look at
+    <a href="chap_modules_common.html" title="6.&nbsp;Common needs for all configurable modules">Section&nbsp;6, &ldquo;Common needs for all configurable modules&rdquo;</a> for code examples). At its core the
+    settings framework is a way to keep persistent, context sensitive
+    configuration settings for any class in the crawler.</p><p>All classes in the crawler that have configurable settings,
+    subclass
+    <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/ComplexType.html" target="_top">ComplexType</a>
+    or one of its descendants. The ComplexType implements the
+    javax.management.DynamicMBean interface. This gives you a way to ask the
+    object for what attributes it supports the standard methods for getting
+    and setting these attributes.</p><p>The entry point into the settings framework is the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/SettingsHandler.html" target="_top">SettingsHandler</a>.
+    This class is responsible for loading and saving from persistent storage
+    and for interconnecting the different parts of the framework.</p><div class="figure"><a name="settings_overview"></a><p class="title"><b>Figure&nbsp;3.&nbsp;Schematic view of the Settings Framework</b></p><div class="mediaobject"><img src="../settings1.png" alt="Schematic view of the Settings Framework"></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N101CB"></a>5.1.&nbsp;Settings hierarchy</h3></div></div></div><p>The settings framework supports a hierarchy of settings. This
+      hierarchy is built by <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/CrawlerSettings.html" target="_top">CrawlerSettings</a>
+      objects. On the top there is a settings object representing the global
+      settings. This consists of all the settings that a crawl job needs for
+      running. Beneath this global object there is one "per" settings object
+      for each host/domain which has settings that should override the order
+      for that particular host or domain.</p><p>When the settings framework is asked for an attribute for a
+      specific host, it will first try to see if this attribute is set for
+      this particular host. If it is, the value will be returned. If not, it
+      will go up one level recursively until it eventually reaches the order
+      object and returns the global value. If no value is set here either
+      (normally it would be), a hard coded default value is returned.</p><p>All per domain/host settings objects only contain those settings
+      which are to be overridden for that particular domain/host. The
+      convention is to name the top level object "global settings" and the
+      objects beneath "per settings" or "overrides" (although the refinements
+      described next, also do overriding).</p><p>To further complicate the picture, there is also settings objects
+      called refinements. An object of this type belongs to a global or per
+      settings object and overrides the settings in its owners object if some
+      criteria is met. These criteria could be that the URI in question
+      conforms to a regular expression or that the settings are consulted
+      at a specific time of day limited by a time span.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N101DA"></a>5.2.&nbsp;ComplexType hierarchy</h3></div></div></div><p>All the configurable modules in the crawler subclasses ComplexType
+      or one of its descendants. The ComplexType is responsible for keeping
+      the definition of the configurable attributes of the module. The actual
+      values are stored in an instance of DataContainer. The DataContainer is
+      never accessed directly from user code. Instead the user accesses the
+      attributes through methods in the ComplexType. The attributes are
+      accessed in different ways depending on
+      if it is from the user interface or
+      from inside a running crawl.</p><p>When an attribute is accessed from the URI (either reading or
+      writing) you want to make sure that you are editing the attribute in the
+      right context. When trying to override an attribute, you don't want the
+      settings framework to traverse up to an effective value for the attribute,
+      but instead want to know that the attribute is not set on this level. To
+      achieve this, there is <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/ComplexType.html#getLocalAttribute(org.archive.crawler.settings.CrawlerSettings,%20java.lang.String)" target="_top">getLocalAttribute(CrawlerSettings
+      settings, String name)</a> and <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/ComplexType.html#setAttribute(org.archive.crawler.settings.CrawlerSettings,%20javax.management.Attribute)" target="_top">setAttribute(CrawlerSettings
+      settings, Attribute attribute)</a> methods taking a settings object
+      as a parameter. These methods works only on the supplied settings
+      object. In addition the methods <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/ComplexType.html#getAttribute(java.lang.String)" target="_top">getAttribute(name)</a>
+      and <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/ComplexType.html#setAttribute(javax.management.Attribute)" target="_top">setAttribute(Attribute
+      attribute)</a> is there for conformance to the Java JMX
+      specification. The latter two always works on the global settings
+      object.</p><p>Getting an attribute within a crawl is different in that you
+      always want to get a value even if it is not set in its context. That
+      means that the settings framework should work its way up the settings
+      hierarchy to find the value in effect for the context. The method <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/ComplexType.html#getAttribute(java.lang.String,%20org.archive.crawler.datamodel.CrawlURI)" target="_top">getAttribute(String
+      name, CrawlURI uri)</a> should be used to make sure that the right
+      context is used. The <a href="settings.html#get_attribute_flow" title="Figure&nbsp;4.&nbsp;Flow of getting an attribute">Figure&nbsp;4, &ldquo;Flow of getting an attribute&rdquo;</a> shows how the
+      settings framework finds the effective value given a context.</p><div class="figure"><a name="get_attribute_flow"></a><p class="title"><b>Figure&nbsp;4.&nbsp;Flow of getting an attribute</b></p><div class="mediaobject"><img src="../settings2.png" alt="Flow of getting an attribute"></div></div><p>The different attributes each have a type. The allowed types all
+      subclass the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/Type.html" target="_top">Type</a>
+      class. There are tree main types:</p><div class="orderedlist"><ol type="1"><li><p>SimpleType</p></li><li><p>ListType</p></li><li><p>ComplexType</p></li></ol></div><p>Except for the SimpleType, the actual type used will be a subclass
+      of one of these main types.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10217"></a>5.2.1.&nbsp;SimpleType</h4></div></div></div><p>The <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/SimpleType.html" target="_top">SimpleType</a>
+        is mainly for representing Java wrappers for the Java primitive
+        types. In addition it also handles the 
+        <code class="literal">java.util.Date</code> type and a
+        special Heritrix <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/TextField.html" target="_top">TextField</a>
+        type. Overrides of a SimpleType must be of the same type as the
+        initial default value for the SimpleType.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10228"></a>5.2.2.&nbsp;ListType</h4></div></div></div><p>The <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/ListType.html" target="_top">ListType</a>
+        is further subclassed into versions for some of the wrapped Java
+        primitive types (<a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/DoubleList.html" target="_top">DoubleList</a>,
+        <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/FloatList.html" target="_top">FloatList</a>,
+        <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/IntegerList.html" target="_top">IntegerList</a>,
+        <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/LongList.html" target="_top">LongList</a>,
+        <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/StringList.html" target="_top">StringList</a>).
+        A List holds values in the same order as they were added. If an
+        attribute of type ListType is overridden, then the complete list of
+        values is replaced at the override level.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10245"></a>5.2.3.&nbsp;ComplexType</h4></div></div></div><p>The <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/ComplexType.html" target="_top">ComplexType</a>
+        is a map of name/value pairs. The values can be any Type including new
+        ComplexTypes. The ComplexType is defined abstract and you should use
+        one of the subclasses <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/MapType.html" target="_top">MapType</a>
+        or <a href="http://crawler.archive.org/apidocs/org/archive/crawler/settings/ModuleType.html" target="_top">ModuleType</a>.
+        The MapType allows adding of new name/value pairs at runtime, while
+        the ModuleType only allows the name/value pairs that it defines at
+        construction time. When overriding the MapType the options are either
+        override the value of an already existing attribute or add a new one.
+        It is not possible in an override to remove an existing attribute. The
+        ModuleType doesn't allow additions in overrides, but the predefined
+        attributes' values might be overridden. Since the ModuleType is
+        defined at construction time, it is possible to set more restrictions
+        on each attribute than in the MapType. Another consequence of
+        definition at construction time is that you would normally subclass
+        the ModuleType, while the MapType is usable as it is. It is possible
+        to restrict the MapType to only allow attributes of a certain type.
+        There is also a restriction that MapTypes can not contain nested
+        MapTypes.</p></div></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="overview.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="chap_modules_common.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">4.&nbsp;Overview of the crawler&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;6.&nbsp;Common needs for all configurable modules</td></tr></table></div></body></html>

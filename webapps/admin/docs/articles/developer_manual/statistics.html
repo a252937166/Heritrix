@@ -1,0 +1,30 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>12.&nbsp;Writing a Statistics Tracker</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix developer documentation"><link rel="up" href="index.html" title="Heritrix developer documentation"><link rel="prev" href="processor.html" title="11.&nbsp;Writing a Processor"><link rel="next" href="arcs.html" title="13.&nbsp;Internet Archive ARC files"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">12.&nbsp;Writing a Statistics Tracker</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="processor.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="arcs.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="statistics"></a>12.&nbsp;Writing a Statistics Tracker</h2></div></div></div><p>A Statistics Tracker is a module that monitors the crawl and records
+    statistics of interest to it.</p><p>Statistics Trackers must implement the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/StatisticsTracking.html" target="_top">StatisticsTracking
+    interface</a>. The interface imposes very little on the module.</p><p>Its initialization method provides the new statistics tracker with a
+    reference to the CrawlController and thus the module has access to any
+    part of the crawl.</p><p>Generally statistics trackers gather information by either querying
+    the data exposed by the Frontier or by listening for <a href="http://crawler.archive.org/apidocs/org/archive/crawler/event/CrawlURIDispositionListener.html" target="_top">CrawlURI
+    disposition events</a> and <a href="http://crawler.archive.org/apidocs/org/archive/crawler/event/CrawlStatusListener.html" target="_top">crawl
+    status events</a>.</p><p>The interface extends Runnable. This is based on the assumptions
+    that statistics tracker are proactive in gathering their information. The
+    CrawlController will start each statistics tracker once the crawl begins.
+    If this facility is not needed in a statistics tracker (i.e. all
+    information is gathered passively) simply implement the run() method as an
+    empty method.<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>For new statistics tracking modules to be available in the web
+        user interface their class name must be added to the
+        <code class="filename">StatisticsTracking.options</code>
+        file under the conf/modules directory. The classes' full name (with
+        package info) should be written in its own line, followed by a '|' and
+        a descriptive name (containing only [a-z,A-Z]).</p></div></p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N106A2"></a>12.1.&nbsp;AbstractTracker</h3></div></div></div><p>A partial implementation of a StatisticsTracker is provided in the
+      frameworks package. The <a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/AbstractTracker.html" target="_top">AbstractTracker</a>
+      implements the StatisticsTracking interface and adds the needed
+      infrastructure for doing snapshots of the crawler status.</p><p>This is done implementing the thread aspects of the statistics
+      tracker. This means that classes extending the AbstractTracker need not
+      worry about thread handling, implementing the logActivity() method
+      allows them to poll any information at fixed intervals.</p><p>AbstractTracker also listens for crawl status events and pauses
+      and stops its activity based on them.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N106AF"></a>12.2.&nbsp;Provided StatisticsTracker</h3></div></div></div><p>The admin package contains the only provided implementation of the
+      statistics tracking interface. The <a href="http://crawler.archive.org/apidocs/org/archive/crawler/admin/StatisticsTracker.html" target="_top">StatisticsTracker</a>
+      is designed to write progress information to the progress-statistics.log
+      as well as providing the web user interface with information about
+      ongoing and completed crawls. It also dumps various reports at the end
+      of each crawl.</p></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="processor.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="arcs.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">11.&nbsp;Writing a Processor&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;13.&nbsp;Internet Archive ARC files</td></tr></table></div></body></html>

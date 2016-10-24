@@ -1,0 +1,377 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>12.&nbsp;Release 1.6.0 - 2005-12-01</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix Release Notes"><link rel="up" href="index.html" title="Heritrix Release Notes"><link rel="prev" href="1_8_0.html" title="11.&nbsp;Release 1.8.0 - 2006-05-05"><link rel="next" href="1_4_0.html" title="13.&nbsp;Release 1.4.0 - 2005-04-28"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">12.&nbsp;Release 1.6.0 - 2005-12-01</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="1_8_0.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="1_4_0.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="1_6_0"></a>12.&nbsp;Release 1.6.0 - 2005-12-01</h2></div></div></div><div class="abstract"><p class="title"><b>Abstract</b></p><p>Release 1.6.0 offers improved remote control and monitoring via
+      JMX, a crawl-checkpointing facility, and experimental support for bloom
+      filter already-included testing, partitioning a crawl across multiple
+      independent crawlers, and per-host/domain/queue-grouping collection
+      quotas. Performance and stability in large crawls is also improved.
+      Among tracked issues, it includes 39 requested enhancements and fixes 96
+      reported bugs.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="1_6_0_limitations"></a>12.1.&nbsp;Known Limitations/Issues</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="1_6_0_limitations_bdb_nfs"></a>12.1.1.&nbsp;java.io.IOException: No locks available</h4></div></div></div><p>BDB will complain 'No locks available' when crawler is being
+        built/run on an NFS mount. Workaround is not run on an NFS-mounted
+        volume.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="bdb_64bit"></a>12.1.2.&nbsp;OutOfMemoryError in 64bit JVMs</h4></div></div></div><p>BDB 2.0.90 can overgrow its intended cache size due to a
+        misestimation of instance sizes under 64bit Java VMs, which may be a
+        major contributor to early Heritrix OutOfMemoryError problems on 64bit
+        systems. A workaround is to cut the assigned percentage by 1/3 to 1/2.
+        For example, change the 'bdb-cache-percent' setting to '40' or '30'
+        (instead of the default 60% when no value is set here).</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="1_6_0_changes"></a>12.2.&nbsp;Changes</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="postselector"></a>12.2.1.&nbsp;Postselector</h4></div></div></div><p>The Postselector has been refactored out of existence. Its
+        responsibilities have been parcelled out to two new Processors:
+        LinksScoper and FrontierScheduler. LinksScoper is responsible for
+        scope checking of extracted links. FrontierScheduler does the
+        scheduling of URIs with the Frontier.</p><p>This change was done to allow introduction of processors between
+        scope checking and Frontier scheduling steps.</p><p>Because of this change, order files from 1.4.0 Heritrix or
+        before will need to be updated -- Postselector references replaced by
+        LinkScoper and FrontierScheduler references -- before they can be used
+        with Heritrix 1.6.0 (Referencing a non-existent Postselector in an
+        order file usually shows as -50 fetch status in crawl.log).</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="wui_console"></a>12.2.2.&nbsp;Web Console</h4></div></div></div><p>The layout and terminology of the web Console and header have
+        been changed, and new readouts added. Most notably, "Crawler Status"
+        and "Job Status" information have been moved to separate boxes, with
+        the controls for each at the top of their respective boxes, near the
+        current status information. Also, the "Crawling"/"Stopped" distinction
+        in the crawler -- whether available pending jobs would be started as
+        possible -- has been renamed "Crawling Jobs"/"Holding Jobs" for
+        clarity.</p></div><p>
+        <div class="table"><a name="N10A9C"></a><p class="title"><b>Table&nbsp;5.&nbsp;All Tracked Changes</b></p><table summary="All Tracked Changes" border="1"><colgroup><col><col><col><col><col><col></colgroup><thead><tr><th>ID</th><th>Type</th><th>Summary</th><th>Open Date</th><th>By</th><th>Filer</th></tr></thead><tbody><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=806831&group_id=73833&atid=539102" target="_top">806831</a>
+                </td><td>Add</td><td>XMLExtractor (XML/RSS)</td><td>2003-09-15</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=983051&group_id=73833&atid=539102" target="_top">983051</a>
+                </td><td>Add</td><td>annotate what robots.txt would have precluded</td><td>2004-06-30</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1069331&group_id=73833&atid=539102" target="_top">1069331</a>
+                </td><td>Add</td><td>hold paused crawl at 'end', allowing all in-progress
+                ops</td><td>2004-11-19</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1081774&group_id=73833&atid=539102" target="_top">1081774</a>
+                </td><td>Add</td><td>need way to delete overrides</td><td>2004-12-08</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1104696&group_id=73833&atid=539102" target="_top">1104696</a>
+                </td><td>Add</td><td>Confusion: CrawlController and CrawlJob States</td><td>2005-01-18</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1108006&group_id=73833&atid=539102" target="_top">1108006</a>
+                </td><td>Add</td><td>alerts should show current processor</td><td>2005-01-23</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1108520&group_id=73833&atid=539102" target="_top">1108520</a>
+                </td><td>Add</td><td>SURT needs facelift</td><td>2005-01-24</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1119616&group_id=73833&atid=539102" target="_top">1119616</a>
+                </td><td>Add</td><td>Decompose Postselector to Scoping and Scheduling
+                components</td><td>2005-02-09</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1122692&group_id=73833&atid=539102" target="_top">1122692</a>
+                </td><td>Add</td><td>[contribution] New fixed number of queues
+                policy</td><td>2005-02-14</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1173597&group_id=73833&atid=539102" target="_top">1173597</a>
+                </td><td>Add</td><td>jmx api additions</td><td>2005-03-30</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1176934&group_id=73833&atid=539102" target="_top">1176934</a>
+                </td><td>Add</td><td>[contrib] Generalize/Refactor BDB Frontier</td><td>2005-04-05</td><td>stack-sf</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1180630&group_id=73833&atid=539102" target="_top">1180630</a>
+                </td><td>Add</td><td>[contrib] UI stacktrace dump (Depends on
+                JDK150)</td><td>2005-04-11</td><td>stack-sf</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1183376&group_id=73833&atid=539102" target="_top">1183376</a>
+                </td><td>Add</td><td>Post 1.4 Deprecate filter scope and remove post
+                1.6.</td><td>2005-04-14</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1190974&group_id=73833&atid=539102" target="_top">1190974</a>
+                </td><td>Add</td><td>Quick resume without real recovery /
+                Checkpointing</td><td>2005-04-27</td><td>karl-ia</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1196602&group_id=73833&atid=539102" target="_top">1196602</a>
+                </td><td>Add</td><td>[contrib] Show estimated remaining time</td><td>2005-05-06</td><td>stack-sf</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1200205&group_id=73833&atid=539102" target="_top">1200205</a>
+                </td><td>Add</td><td>add 'exhausted' queue count to frontier report</td><td>2005-05-11</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1204644&group_id=73833&atid=539102" target="_top">1204644</a>
+                </td><td>Add</td><td>add 'memory used' to progress-statistics.log</td><td>2005-05-18</td><td>kristinn_sig</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1205583&group_id=73833&atid=539102" target="_top">1205583</a>
+                </td><td>Add</td><td>add CandidateURI parameter to
+                UriUniqFilter.forget()</td><td>2005-05-20</td><td>stack-sf</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1207866&group_id=73833&atid=539102" target="_top">1207866</a>
+                </td><td>Add</td><td>[contrib] ThreadLocal-version of
+                TextUtil.getMatcher</td><td>2005-05-24</td><td>gojomo</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1207898&group_id=73833&atid=539102" target="_top">1207898</a>
+                </td><td>Add</td><td>[contrib] WorkQueueFrontier: Store allQueues in RAM if
+                poss.</td><td>2005-05-24</td><td>stack-sf</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1208293&group_id=73833&atid=539102" target="_top">1208293</a>
+                </td><td>Add</td><td>List based URIRegExprFilter</td><td>2005-05-25</td><td>kristinn_sig</td><td>kristinn_sig</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1208510&group_id=73833&atid=539102" target="_top">1208510</a>
+                </td><td>Add</td><td>[rfe-contrib] Add Stacktrace dump to
+                ToeThread.report()</td><td>2005-05-25</td><td>stack-sf</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1208747&group_id=73833&atid=539102" target="_top">1208747</a>
+                </td><td>Add</td><td>CrawlURI serialization bloated; should be
+                slimmed</td><td>2005-05-25</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1208757&group_id=73833&atid=539102" target="_top">1208757</a>
+                </td><td>Add</td><td>Cookies are thread traffic jam and memory hog</td><td>2005-05-25</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1208770&group_id=73833&atid=539102" target="_top">1208770</a>
+                </td><td>Add</td><td>garbage hot spot: SerialBinding &amp;
+                FastOutputStream.bump()</td><td>2005-05-25</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1211217&group_id=73833&atid=539102" target="_top">1211217</a>
+                </td><td>Add</td><td>[contrib] Add debugging aid for BDB
+                RuntimeExceptionWrapper</td><td>2005-05-30</td><td>stack-sf</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1217854&group_id=73833&atid=539102" target="_top">1217854</a>
+                </td><td>Add</td><td>seed report of redirect should show where to</td><td>2005-06-09</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1222764&group_id=73833&atid=539102" target="_top">1222764</a>
+                </td><td>Add</td><td>Rotation of crawl logs</td><td>2005-06-17</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1223840&group_id=73833&atid=539102" target="_top">1223840</a>
+                </td><td>Add</td><td>BdbWorkQueue origins should be based on full
+                classKey</td><td>2005-06-19</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1225597&group_id=73833&atid=539102" target="_top">1225597</a>
+                </td><td>Add</td><td>Expose the bdb je 2.0 jmx interface</td><td>2005-06-22</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1225729&group_id=73833&atid=539102" target="_top">1225729</a>
+                </td><td>Add</td><td>new alreadyIncluded option: Bloom filter based</td><td>2005-06-22</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1254560&group_id=73833&atid=539102" target="_top">1254560</a>
+                </td><td>Add</td><td>Add to queue-assignment-policy without compile</td><td>2005-08-08</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1260360&group_id=73833&atid=539102" target="_top">1260360</a>
+                </td><td>Add</td><td>More than one Heritrix instance in a JVM
+                instance</td><td>2005-08-15</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1261506&group_id=73833&atid=539102" target="_top">1261506</a>
+                </td><td>Add</td><td>Multimachine Crawl Splitter Processor</td><td>2005-08-16</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1262665&group_id=73833&atid=539102" target="_top">1262665</a>
+                </td><td>Add</td><td>add dummy items at heads of BDB queues for
+                performance</td><td>2005-08-17</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1302182&group_id=73833&atid=539102" target="_top">1302182</a>
+                </td><td>Add</td><td>IP geolocation based scoping</td><td>2005-09-23</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1302208&group_id=73833&atid=539102" target="_top">1302208</a>
+                </td><td>Add</td><td>per-crawler 'load' summary numbers</td><td>2005-09-23</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1325123&group_id=73833&atid=539102" target="_top">1325123</a>
+                </td><td>Add</td><td>Checkpointing fixes/improvements</td><td>2005-10-12</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1329725&group_id=73833&atid=539102" target="_top">1329725</a>
+                </td><td>Add</td><td>[uuri] When 'generous' mode, don't encode
+                curly-brackets</td><td>2005-10-18</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=965622&group_id=73833&atid=539099" target="_top">965622</a>
+                </td><td>Fix</td><td>Serious error during crawling did not produce an
+                alert</td><td>2004-06-03</td><td>gojomo</td><td>kristinn_sig</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1000338&group_id=73833&atid=539099" target="_top">1000338</a>
+                </td><td>Fix</td><td>[UURI] escaped absolute path not valid</td><td>2004-07-29</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1002356&group_id=73833&atid=539099" target="_top">1002356</a>
+                </td><td>Fix</td><td>timing issue on crawl-start &amp; "run time"
+                stat</td><td>2004-08-02</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1059126&group_id=73833&atid=539099" target="_top">1059126</a>
+                </td><td>Fix</td><td>Other than default seeds path is not used</td><td>2004-11-02</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1060517&group_id=73833&atid=539099" target="_top">1060517</a>
+                </td><td>Fix</td><td>hard-coding of job dir in state.job makes moves
+                awkward</td><td>2004-11-04</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1062727&group_id=73833&atid=539099" target="_top">1062727</a>
+                </td><td>Fix</td><td>angle-brackets in URIs thwart frontier report</td><td>2004-11-08</td><td>kristinn_sig</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1065413&group_id=73833&atid=539099" target="_top">1065413</a>
+                </td><td>Fix</td><td>[uuri] '$' in path gets scheduled, spawns queueing
+                error</td><td>2004-11-12</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1080926&group_id=73833&atid=539099" target="_top">1080926</a>
+                </td><td>Fix</td><td>reducing max-toe-threads has no effect</td><td>2004-12-07</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1083427&group_id=73833&atid=539099" target="_top">1083427</a>
+                </td><td>Fix</td><td>Text incorrect in WUI when create new profile</td><td>2004-12-11</td><td>nobody</td><td>zhousp</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1090564&group_id=73833&atid=539099" target="_top">1090564</a>
+                </td><td>Fix</td><td>max-trans-hops=0 generates -63 in crawl.log</td><td>2004-12-23</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1090916&group_id=73833&atid=539099" target="_top">1090916</a>
+                </td><td>Fix</td><td>RIS still open; ThreadLocalConnectionManager async
+                close</td><td>2004-12-24</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1113410&group_id=73833&atid=539099" target="_top">1113410</a>
+                </td><td>Fix</td><td>NPE readalert_jsp._jspService</td><td>2005-01-31</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1116456&group_id=73833&atid=539099" target="_top">1116456</a>
+                </td><td>Fix</td><td>ARCWriter length is wrong (But coherent gzip
+                record)</td><td>2005-02-04</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1119644&group_id=73833&atid=539099" target="_top">1119644</a>
+                </td><td>Fix</td><td>frontier report ConcurrentModificationException</td><td>2005-02-09</td><td>gojomo</td><td>frodobay</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1122836&group_id=73833&atid=539099" target="_top">1122836</a>
+                </td><td>Fix</td><td>Localize StackOverflowError in Extractors</td><td>2005-02-14</td><td>nobody</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1181892&group_id=73833&atid=539099" target="_top">1181892</a>
+                </td><td>Fix</td><td>Aggressive extraction of `for' attributes</td><td>2005-04-12</td><td>karl-ia</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1187973&group_id=73833&atid=539099" target="_top">1187973</a>
+                </td><td>Fix</td><td>NPE in FetchDNS, caused by UURI</td><td>2005-04-22</td><td>nobody</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1192029&group_id=73833&atid=539099" target="_top">1192029</a>
+                </td><td>Fix</td><td>OOME guard against pages of thousands of links</td><td>2005-04-28</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1195312&group_id=73833&atid=539099" target="_top">1195312</a>
+                </td><td>Fix</td><td>WaitEvaluators accidentally removed from
+                Processors.options</td><td>2005-05-04</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1196594&group_id=73833&atid=539099" target="_top">1196594</a>
+                </td><td>Fix</td><td>minor CSS typo, wrong text font.</td><td>2005-05-06</td><td>nobody</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1196630&group_id=73833&atid=539099" target="_top">1196630</a>
+                </td><td>Fix</td><td>Build w/ 150 jdk won't run under 14x.</td><td>2005-05-06</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1200957&group_id=73833&atid=539099" target="_top">1200957</a>
+                </td><td>Fix</td><td>Web UI recovery mangles paths</td><td>2005-05-12</td><td>karl-ia</td><td>karl-ia</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1203235&group_id=73833&atid=539099" target="_top">1203235</a>
+                </td><td>Fix</td><td>can't change cost policy mid-crawl</td><td>2005-05-16</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1203588&group_id=73833&atid=539099" target="_top">1203588</a>
+                </td><td>Fix</td><td>BdbFrontier, serious exception -
+                LatchNotHeldException</td><td>2005-05-17</td><td>karl-ia</td><td>kristinn_sig</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1203958&group_id=73833&atid=539099" target="_top">1203958</a>
+                </td><td>Fix</td><td>JMX remote command 'stop' leaves zombie crawler</td><td>2005-05-17</td><td>stack-sf</td><td>karl-ia</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1204643&group_id=73833&atid=539099" target="_top">1204643</a>
+                </td><td>Fix</td><td>uri-errors.log: old timestamps, too many errors</td><td>2005-05-18</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1204667&group_id=73833&atid=539099" target="_top">1204667</a>
+                </td><td>Fix</td><td>'custom' robots policy doesn't work</td><td>2005-05-18</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1204931&group_id=73833&atid=539099" target="_top">1204931</a>
+                </td><td>Fix</td><td>NPE when viewing crawl report</td><td>2005-05-19</td><td>karl-ia</td><td>kristinn_sig</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1207320&group_id=73833&atid=539099" target="_top">1207320</a>
+                </td><td>Fix</td><td>[arcwriter] Record w/ empty body on OOME</td><td>2005-05-23</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1207378&group_id=73833&atid=539099" target="_top">1207378</a>
+                </td><td>Fix</td><td>seeds listed without scheme, but with path, being
+                ignored</td><td>2005-05-23</td><td>karl-ia</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1208804&group_id=73833&atid=539099" target="_top">1208804</a>
+                </td><td>Fix</td><td>CachedBdbMap NPE killing off threads.</td><td>2005-05-25</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1209046&group_id=73833&atid=539099" target="_top">1209046</a>
+                </td><td>Fix</td><td>Failed URIs should be 'free' (no cost against queue
+                budget)</td><td>2005-05-26</td><td>gojomo</td><td>kristinn_sig</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1209665&group_id=73833&atid=539099" target="_top">1209665</a>
+                </td><td>Fix</td><td>ReplayCharSequenceFactory: Unexpected response body
+                offset</td><td>2005-05-27</td><td>karl-ia</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1212377&group_id=73833&atid=539099" target="_top">1212377</a>
+                </td><td>Fix</td><td>URIException in deserialization, post CrawlURI
+                slimming</td><td>2005-05-31</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1213095&group_id=73833&atid=539099" target="_top">1213095</a>
+                </td><td>Fix</td><td>UURI handling of inconsistent escaping makes broken
+                instance</td><td>2005-06-01</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1214478&group_id=73833&atid=539099" target="_top">1214478</a>
+                </td><td>Fix</td><td>ThreadLocalHttpConnectionManager starts a non-daemon
+                Thread</td><td>2005-06-03</td><td>nobody</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1216633&group_id=73833&atid=539099" target="_top">1216633</a>
+                </td><td>Fix</td><td>recovery fills heritrix_out with "Relative URI but no
+                base..</td><td>2005-06-07</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1217290&group_id=73833&atid=539099" target="_top">1217290</a>
+                </td><td>Fix</td><td>Non-canonical seed URLs need better reporting</td><td>2005-06-08</td><td>karl-ia</td><td>karl-ia</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1218019&group_id=73833&atid=539099" target="_top">1218019</a>
+                </td><td>Fix</td><td>GzippedInputStream class is not thread-safe</td><td>2005-06-10</td><td>nobody</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1218037&group_id=73833&atid=539099" target="_top">1218037</a>
+                </td><td>Fix</td><td>CookieSpec interface modification breaks
+                IgnoreCookiesSpec</td><td>2005-06-10</td><td>gojomo</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1218283&group_id=73833&atid=539099" target="_top">1218283</a>
+                </td><td>Fix</td><td>ARCReader: Bad URI escaping for tab character</td><td>2005-06-10</td><td>nobody</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1218958&group_id=73833&atid=539099" target="_top">1218958</a>
+                </td><td>Fix</td><td>odd preencoded URIs generate error on
+                deserialization</td><td>2005-06-11</td><td>nobody</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1219259&group_id=73833&atid=539099" target="_top">1219259</a>
+                </td><td>Fix</td><td>broad crawls slow; most threads stuck retrying missing
+                sites</td><td>2005-06-12</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1219262&group_id=73833&atid=539099" target="_top">1219262</a>
+                </td><td>Fix</td><td>'treat seed redirects as new seeds' not working</td><td>2005-06-12</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1219486&group_id=73833&atid=539099" target="_top">1219486</a>
+                </td><td>Fix</td><td>no rule for decidingscope to always crawl seeds</td><td>2005-06-12</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1219715&group_id=73833&atid=539099" target="_top">1219715</a>
+                </td><td>Fix</td><td>[patch] Signature change broke
+                BucketQueueAssignmentPolicy</td><td>2005-06-13</td><td>nobody</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1219854&group_id=73833&atid=539099" target="_top">1219854</a>
+                </td><td>Fix</td><td>NPE je-2.0 entryToObject(SerialBinding.java:82)</td><td>2005-06-13</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1220714&group_id=73833&atid=539099" target="_top">1220714</a>
+                </td><td>Fix</td><td>ExtractorHTML excessive temp strings / OOM</td><td>2005-06-14</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1221570&group_id=73833&atid=539099" target="_top">1221570</a>
+                </td><td>Fix</td><td>reports (web ui and to disk) don't scale</td><td>2005-06-15</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1222229&group_id=73833&atid=539099" target="_top">1222229</a>
+                </td><td>Fix</td><td>unicode/idn domain names fail (seeds and more?)-
+                punycode</td><td>2005-06-16</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1222360&group_id=73833&atid=539099" target="_top">1222360</a>
+                </td><td>Fix</td><td>strip-www canon. rule causes failed crawl of
+                netarkivet.dk</td><td>2005-06-16</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1224531&group_id=73833&atid=539099" target="_top">1224531</a>
+                </td><td>Fix</td><td>'@' in URI path confuses SURT (bad queues, scope probs,
+                etc)</td><td>2005-06-20</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1226365&group_id=73833&atid=539099" target="_top">1226365</a>
+                </td><td>Fix</td><td>DomainSensitiveFrontier broken by
+                uri-included-structure</td><td>2005-06-23</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1226387&group_id=73833&atid=539099" target="_top">1226387</a>
+                </td><td>Fix</td><td>BdbUriUniqFilter URI fingerprint somewhat collision
+                prone</td><td>2005-06-23</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1226707&group_id=73833&atid=539099" target="_top">1226707</a>
+                </td><td>Fix</td><td>CandidateURI serialization 'decodes' UURI</td><td>2005-06-23</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1230180&group_id=73833&atid=539099" target="_top">1230180</a>
+                </td><td>Fix</td><td>nonstandard port URIs fail with '-50': Surt queue
+                policy bug</td><td>2005-06-30</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1230188&group_id=73833&atid=539099" target="_top">1230188</a>
+                </td><td>Fix</td><td>DNS prereq problems (-50 fails/repeats):
+                calculateInsertKey</td><td>2005-06-30</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1231123&group_id=73833&atid=539099" target="_top">1231123</a>
+                </td><td>Fix</td><td>IdentityCachingMapTest FAILED: cache not cleared
+                appropriate</td><td>2005-07-01</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1232402&group_id=73833&atid=539099" target="_top">1232402</a>
+                </td><td>Fix</td><td>IdentityCachingMapTest fails on fedora</td><td>2005-07-04</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1232974&group_id=73833&atid=539099" target="_top">1232974</a>
+                </td><td>Fix</td><td>WorkQueueFrontier.kickUpdate ClassCastException /
+                unretiring</td><td>2005-07-05</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1236094&group_id=73833&atid=539099" target="_top">1236094</a>
+                </td><td>Fix</td><td>Possible deadlock situation with ARFrontier</td><td>2005-07-11</td><td>kristinn_sig</td><td>kristinn_sig</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1236334&group_id=73833&atid=539099" target="_top">1236334</a>
+                </td><td>Fix</td><td>Cannot set cachePercentage in bdbje JMX bean</td><td>2005-07-11</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1236635&group_id=73833&atid=539099" target="_top">1236635</a>
+                </td><td>Fix</td><td>Link ClassCastException</td><td>2005-07-12</td><td>kristinn_sig</td><td>kristinn_sig</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1239155&group_id=73833&atid=539099" target="_top">1239155</a>
+                </td><td>Fix</td><td>[arcreader] Fails on records that only have
+                headers</td><td>2005-07-15</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1241851&group_id=73833&atid=539099" target="_top">1241851</a>
+                </td><td>Fix</td><td>Connection reset error with WebSTAR/3.0.2 web
+                serve</td><td>2005-07-20</td><td>karl-ia</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1242747&group_id=73833&atid=539099" target="_top">1242747</a>
+                </td><td>Fix</td><td>over-escaping (of '%', etc) compared to
+                browsers</td><td>2005-07-21</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1248942&group_id=73833&atid=539099" target="_top">1248942</a>
+                </td><td>Fix</td><td>custom robots.txt NPE in 1.4.0</td><td>2005-07-31</td><td>gojomo</td><td>efc</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1249828&group_id=73833&atid=539099" target="_top">1249828</a>
+                </td><td>Fix</td><td>-5000 out-of-scope preconditions; -50 failure</td><td>2005-08-01</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1250437&group_id=73833&atid=539099" target="_top">1250437</a>
+                </td><td>Fix</td><td>host with trailing '.' in seeds ruins implied
+                SURT</td><td>2005-08-02</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1255137&group_id=73833&atid=539099" target="_top">1255137</a>
+                </td><td>Fix</td><td>Deferred URI should be 'free' (no cost against queue
+                budget)</td><td>2005-08-09</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1257157&group_id=73833&atid=539099" target="_top">1257157</a>
+                </td><td>Fix</td><td>create job: empty seeds box, broken settings
+                tab</td><td>2005-08-11</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1266713&group_id=73833&atid=539099" target="_top">1266713</a>
+                </td><td>Fix</td><td>already-seen test not working (1.4.0);
+                canonicalization</td><td>2005-08-22</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1276044&group_id=73833&atid=539099" target="_top">1276044</a>
+                </td><td>Fix</td><td>Prune classes deprecated in 1.4.0</td><td>2005-08-29</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1276201&group_id=73833&atid=539099" target="_top">1276201</a>
+                </td><td>Fix</td><td>Notification AFTER reports have been created</td><td>2005-08-29</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1283492&group_id=73833&atid=539099" target="_top">1283492</a>
+                </td><td>Fix</td><td>mimetype-reports squashes together url-count and
+                byte-count</td><td>2005-09-06</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1284353&group_id=73833&atid=539099" target="_top">1284353</a>
+                </td><td>Fix</td><td>Help links to user and dev manuals 404</td><td>2005-09-07</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1291274&group_id=73833&atid=539099" target="_top">1291274</a>
+                </td><td>Fix</td><td>StatisticsTracker writes 'not set'. Crawl.log says
+                'no-type'</td><td>2005-09-14</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1291305&group_id=73833&atid=539099" target="_top">1291305</a>
+                </td><td>Fix</td><td>mime type report not consistent with crawl.log</td><td>2005-09-14</td><td>ia_igor</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1306421&group_id=73833&atid=539099" target="_top">1306421</a>
+                </td><td>Fix</td><td>ExtractorUniversal skips URI with '_'</td><td>2005-09-27</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1323281&group_id=73833&atid=539099" target="_top">1323281</a>
+                </td><td>Fix</td><td>StringIndexOutOfBounds in
+                SurtAuthorityQueueAssignmentPolicy</td><td>2005-10-10</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1323287&group_id=73833&atid=539099" target="_top">1323287</a>
+                </td><td>Fix</td><td>BDB ArrayIndexOutOfBoundsException; corrupt
+                queue</td><td>2005-10-10</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1323323&group_id=73833&atid=539099" target="_top">1323323</a>
+                </td><td>Fix</td><td>IDNAException: String too long / fixupDomainLabel in
+                stdout</td><td>2005-10-10</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1323373&group_id=73833&atid=539099" target="_top">1323373</a>
+                </td><td>Fix</td><td>NPE in CrawlJobHandler.startNextJobInternal</td><td>2005-10-10</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1324245&group_id=73833&atid=539099" target="_top">1324245</a>
+                </td><td>Fix</td><td>implied-HTTP seeds with port numbers get -5000
+                errs</td><td>2005-10-11</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1325304&group_id=73833&atid=539099" target="_top">1325304</a>
+                </td><td>Fix</td><td>'expert' view toggle does inadvertent submit</td><td>2005-10-12</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1332722&group_id=73833&atid=539099" target="_top">1332722</a>
+                </td><td>Fix</td><td>time-based averages wrong after checkpoint</td><td>2005-10-19</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1333669&group_id=73833&atid=539099" target="_top">1333669</a>
+                </td><td>Fix</td><td>delete function in "View or Edit Frontier URIs"
+                Unsupported</td><td>2005-10-20</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1344265&group_id=73833&atid=539099" target="_top">1344265</a>
+                </td><td>Fix</td><td>Laxuri code encodes tildes.</td><td>2005-10-31</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1351818&group_id=73833&atid=539099" target="_top">1351818</a>
+                </td><td>Fix</td><td>Investigate spate of recent OOMEs</td><td>2005-11-08</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1357528&group_id=73833&atid=539099" target="_top">1357528</a>
+                </td><td>Fix</td><td>Double JMX registration problem on remote
+                creation</td><td>2005-11-15</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1358542&group_id=73833&atid=539099" target="_top">1358542</a>
+                </td><td>Fix</td><td>DevUtils.extraInfo shows 2 legend lines, no
+                content</td><td>2005-11-16</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1358567&group_id=73833&atid=539099" target="_top">1358567</a>
+                </td><td>Fix</td><td>transient JSP NPE after starting job</td><td>2005-11-16</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1369177&group_id=73833&atid=539099" target="_top">1369177</a>
+                </td><td>Fix</td><td>NPE in quotaEnforcer, if hostname for URI can't be
+                resolved</td><td>2005-11-29</td><td>nobody</td><td>svc</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1369619&group_id=73833&atid=539099" target="_top">1369619</a>
+                </td><td>Fix</td><td>NPE in QuotaEnforcer</td><td>2005-11-29</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1370743&group_id=73833&atid=539099" target="_top">1370743</a>
+                </td><td>Fix</td><td>properties-based supported/ignored scheme setting
+                broken</td><td>2005-12-01</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1370761&group_id=73833&atid=539099" target="_top">1370761</a>
+                </td><td>Fix</td><td>ArithmeticException: / by 0
+                WorkQueueFrontier.averageDepth</td><td>2005-12-01</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detailamp;aid=1325230&group_id=73833&atid=539099" target="_top">1325230</a>
+                </td><td>Fix</td><td>jmx import of seeds not working</td><td>2005-10-12 14:29</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detailamp;aid=1324989&group_id=73833&atid=539099" target="_top">1324989</a>
+                </td><td>Fix</td><td>Queue counts wrong after checkpointing</td><td>2005-10-12 09:10</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detailamp;aid=1123230&group_id=73833&atid=539099" target="_top">1123230</a>
+                </td><td>Fix</td><td>Out Of Memory after creating mutliple jobs</td><td>2005-02-15 07:51</td><td>karl-ia</td><td>nobody</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detailamp;aid=1322280&group_id=73833&atid=539099" target="_top">1322280</a>
+                </td><td>Fix</td><td>"Failed getPath" alerts (from
+                RobotsExclusionPolicy)</td><td>2005-10-10 02:42</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detailamp;aid=1322264&group_id=73833&atid=539099" target="_top">1322264</a>
+                </td><td>Fix</td><td>NumberFormatException in FetchHTTP.innerProcess</td><td>2005-10-10 02:34</td><td>karl-ia</td><td>gojomo</td></tr></tbody></table></div>
+      </p></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="1_8_0.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="1_4_0.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">11.&nbsp;Release 1.8.0 - 2006-05-05&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;13.&nbsp;Release 1.4.0 - 2005-04-28</td></tr></table></div></body></html>

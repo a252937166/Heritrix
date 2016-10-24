@@ -1,0 +1,41 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>10.&nbsp;Writing a Scope</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix developer documentation"><link rel="up" href="index.html" title="Heritrix developer documentation"><link rel="prev" href="writefilter.html" title="9.&nbsp;Writing a Filter"><link rel="next" href="processor.html" title="11.&nbsp;Writing a Processor"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">10.&nbsp;Writing a Scope</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="writefilter.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="processor.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="scope"></a>10.&nbsp;Writing a Scope</h2></div></div></div><p>A <a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/CrawlScope.html" target="_top">CrawlScope</a>
+    <sup>[<a href="#ftn.footnote_scope_problems" name="footnote_scope_problems">3</a>]</sup> instance defines which URIs are "in" a particular crawl. It
+    is essentially a Filter which determines (actually it subclasses the
+    <a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/Filter.html" target="_top">Filter</a>
+    class), looking at the totality of information available about a
+    CandidateURI/CrawlURI instance, if that URI should be scheduled for
+    crawling. Dynamic information inherent in the discovery of the URI, such
+    as the path by which it was discovered, may be considered. Dynamic
+    information which requires the consultation of external and potentially
+    volatile information, such as current robots.txt requests and the history
+    of attempts to crawl the same URI, should NOT be considered. Those
+    potentially high-latency decisions should be made at another step.</p><p>As with Filters, the scope will be going through a refactoring.
+    Because of that we will only briefly describe how to create new Scopes at
+    this point.</p><p>All Scopes should subclass the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/CrawlScope.html" target="_top">CrawlScope</a>
+    class. Instead of overriding the innerAccepts method as you would do if
+    you created a filter, the CrawlScope class implements this and instead
+    offers several other methods that should be overriden instead. These
+    methods acts as different type of filters that the URI will be checked
+    against. In addition the CrawlScope class offers a list of exclude filters
+    which can be set on every scope. If the URI is accepted (matches the test)
+    by any of the filters in the exclude list, it will be considered being out
+    of scope. The implementation of the innerAccepts method in the CrawlSope
+    is as follows:</p><p><pre class="programlisting">protected final boolean innerAccepts(Object o) {
+    return ((isSeed(o) || focusAccepts(o)) || additionalFocusAccepts(o) ||
+            transitiveAccepts(o)) &amp;&amp; !excludeAccepts(o);
+}</pre></p><p>The result is that the checked URI is considered being inside the
+    crawl's scope if it is a seed or is accepted by any of the focusAccepts,
+    additionalFocusAccepts or transitiveAccepts, unless it is matched by any
+    of the exclude filters.</p><p>When writing your own scope the methods you might want to override
+    are:</p><div class="itemizedlist"><ul type="disc"><li><p><a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/CrawlScope.html#focusAccepts(java.lang.Object)" target="_top">focusAccepts(Object)</a>
+        the focus filter should rule things in by prima facia/regexp-pattern
+        analysis. The typical variants of the focus filter are:<div class="itemizedlist"><ul type="circle"><li><p>broad: accept all</p></li><li><p>domain: accept if on same 'domain' (for some definition)
+              as seeds</p></li><li><p>host: accept if on exact host as seeds</p></li><li><p>path: accept if on same host and a shared path-prefix as
+              seeds</p></li></ul></div>Heritrix ships with scopes that implement each of
+        these variants. An implementation of a new scope might thus be
+        subclassing one of these scopes.</p></li><li><p><a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/CrawlScope.html#additionalFocusAccepts(java.lang.Object)" target="_top">additionalFocusAccepts(Object)</a></p></li><li><p><a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/CrawlScope.html#transitiveAccepts(java.lang.Object)" target="_top">transitiveAccepts(Object)</a>
+        the transitive filter rule extra items in by dynamic path analysis
+        (for example, off site embedded images).</p></li></ul></div><p></p><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#footnote_scope_problems" name="ftn.footnote_scope_problems">3</a>] </sup>It has been identified problems with how the Scopes are defined.
+        Please see the user manual for a discussion of the <a href="http://crawler.archive.org/articles/user_manual/config.html#scopeproblems" target="_top">problems
+        with the current Scopes</a>. The proposed changes to the Scope
+        will affect the Filters as well.</p></div></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="writefilter.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="processor.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">9.&nbsp;Writing a Filter&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;11.&nbsp;Writing a Processor</td></tr></table></div></body></html>

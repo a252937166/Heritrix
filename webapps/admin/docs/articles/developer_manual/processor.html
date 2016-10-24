@@ -1,0 +1,186 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>11.&nbsp;Writing a Processor</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix developer documentation"><link rel="up" href="index.html" title="Heritrix developer documentation"><link rel="prev" href="scope.html" title="10.&nbsp;Writing a Scope"><link rel="next" href="statistics.html" title="12.&nbsp;Writing a Statistics Tracker"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">11.&nbsp;Writing a Processor</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="scope.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="statistics.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="processor"></a>11.&nbsp;Writing a Processor</h2></div></div></div><p>All processors extend <a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/Processor.html" target="_top">org.archive.crawler.framework.Processor</a>.
+    In fact that is a complete class and could be used as a valid processor,
+    only it doesn't actually do anything.</p><p>Extending classes need to override the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/Processor.html#innerProcess(org.archive.crawler.datamodel.CrawlURI)" target="_top">innerProcess(CrawlURI)</a>
+    method on it to add custom behavior. This method will be invoked for each
+    URI being processed and this is therfore where a processor can affect
+    it.</p><p>Basically the innerProcess method uses the CrawlURI that is passed
+    to it as a parameter (see <a href="processor.html#editingCURI" title="11.1.&nbsp;Accessing and updating the CrawlURI">Section&nbsp;11.1, &ldquo;Accessing and updating the CrawlURI&rdquo;</a>) and the
+    underlying HttpRecorder (managed by the ToeThread) (see <a href="processor.html#httprecorder" title="11.2.&nbsp;The HttpRecorder">Section&nbsp;11.2, &ldquo;The HttpRecorder&rdquo;</a>) to perform whatever actions are needed.</p><p>Fetchers read the CrawlURI, fetch the relevant document and write to
+    the HttpRecorder. Extractors read the HttpRecorder and add the discovered
+    URIs to the CrawlURIs list of discovered URIs etc. Not all processors need
+    to make use of the HttpRecorder.</p><p>Several other methods can also be optionally overriden for special
+    needs:</p><div class="itemizedlist"><ul type="disc"><li><p><a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/Processor.html#initialTasks()" target="_top">initialTasks()</a></p><p>This method will be called after the crawl is set up, but before
+        any URIs are crawled.</p><p>Basically it is a place to write initialization code that only
+        needs to be run once at the start of a crawl.</p><p>Example: The <a href="http://crawler.archive.org/apidocs/org/archive/crawler/fetcher/FetchHTTP.html" target="_top">FetchHTTP</a>
+        processor uses this method to load the cookies file specified in the
+        configuration among other things.</p></li><li><p><a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/Processor.html#innerProcess(org.archive.crawler.datamodel.CrawlURI)" target="_top">finalTasks()
+        </a></p><p>This method will be called after the last URI has been processed
+        that will be processed. That is at the very end of a crawl (assuming
+        that the crawl terminates normally).</p><p>Basically a place to write finalization code.</p><p>Example: The FetchHTTP processor uses it to save cookies
+        gathered during the crawl to a specified file.</p></li><li><p><a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/Processor.html#innerProcess(org.archive.crawler.datamodel.CrawlURI)" target="_top">report()
+        </a></p><p>This method returns a string that contains a human readable
+        report on the status and/or progress of the processor. This report is
+        accessible via the WUI and is also written to file at the end of a
+        crawl.</p><p>Generally, a processor would include the number of URIs that
+        they've handled, the number of links extracted (for link extractors)
+        or any other abitrary information of relevance to that
+        processor.</p></li></ul></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="editingCURI"></a>11.1.&nbsp;Accessing and updating the CrawlURI</h3></div></div></div><p>The CrawlURI contains quite a bit of data. For an exhaustive look
+      refer to its <a href="http://crawler.archive.org/apidocs/org/archive/crawler/datamodel/CrawlURI.html" target="_top">Javadoc</a>.</p><div class="itemizedlist"><ul type="disc"><li><p><a href="http://crawler.archive.org/apidocs/org/archive/crawler/datamodel/CrawlURI.html#getAList()" target="_top">getAlist()</a></p><p>This method returns the CrawlURI's 'AList'. 
+          <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p><code class="literal">getAlist()</code> has been deprecated.
+          Use the typed accessors/setters instead.</p></div>
+          The AList is
+          basically a hash map. It is used instead of the Java HashMap or
+          Hashtable because it is more efficient (especially when it comes to
+          serializing it). It also has typed methods for adding and getting
+          strings, longs, dates etc.</p><p>Keys to values and objects placed in it are defined in the
+          <a href="http://crawler.archive.org/apidocs/org/archive/crawler/datamodel/CoreAttributeConstants.html" target="_top">CoreAttributeConstants</a>.</p><p>It is of course possible to add any arbitrary entry to it but
+          that requires writing both the module that sets the value and the
+          one that reads it. This may in fact be desirable in many cases, but
+          where the keys defined in CoreAttributeConstants suffice and fit we
+          strongly recommend using them.</p><p>The following is a quick overview of the most used
+          CoreAttributeConstants:</p><div class="itemizedlist"><ul type="circle"><li><p><span class="bold"><strong>A_CONTENT_TYPE</strong></span></p><p>Extracted MIME type of fetched content; should be set
+              immediately by fetching module if possible (rather than waiting
+              for a later analyzer)</p></li><li><p><span class="bold"><strong>LINK COLLECTIONS</strong></span></p><p>There are several Java Collection containing URIs
+              extracted from different sources. Each link is a Link
+              containing the extracted URI. The URI can be relative. The
+              LinksScoper will read this list and convert Links inscope
+              to CandidateURIs for adding to the Frontier by
+              FrontierScheduler.</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>CrawlURI has the convenience method <a href="http://crawler.archive.org/apidocs/org/archive/crawler/datamodel/CrawlURI.html#addLinkToCollection(java.lang.String,%20java.lang.String)" target="_top">addLinkToCollection(link,
+                collection)</a> for adding links to these collections.
+                This methods is the prefered way of adding to the
+                collections.</p></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>A_CSS_LINKS</em></span></p><p>URIs extracted from CSS stylesheets</p></li><li><p><span class="emphasis"><em>A_HTML_EMBEDS</em></span></p><p>URIs belived to be embeds.</p></li><li><p><span class="emphasis"><em>A_HTML_LINKS</em></span></p><p>Regularly discovered URIs. Despite the name the links
+                  could have (in theroy) been found</p></li><li><p><span class="emphasis"><em>A_HTML_SPECULATIVE_EMBEDS</em></span></p><p>URIs discovered via aggressive link extraction. Are
+                  treated as embeds but generally with lesser tolerance for
+                  nested embeds.</p></li><li><p><span class="emphasis"><em>A_HTTP_HEADER_URIS</em></span></p><p>URIs discovered in the returned HTTP header. Usually
+                  only redirects.</p></li></ul></div></li></ul></div><p>See the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/datamodel/CoreAttributeConstants.html" target="_top">Javadoc</a>
+          for CoreAttributeConstants for more.</p></li><li><p><a href="http://crawler.archive.org/apidocs/org/archive/crawler/datamodel/CrawlURI.html#setHttpRecorder(org.archive.util.HttpRecorder)" target="_top">setHttpRecorder(HttpRecorder)</a></p><p>Set the HttpRecorder that contains the fetched document. This
+          is generally done by the fetching processor.</p></li><li><p><a href="http://crawler.archive.org/apidocs/org/archive/crawler/datamodel/CrawlURI.html#setHttpRecorder(org.archive.util.HttpRecorder)" target="_top">getHttpRecorder()</a></p><p>A method to get at the fetched document. See <a href="processor.html#httprecorder" title="11.2.&nbsp;The HttpRecorder">Section&nbsp;11.2, &ldquo;The HttpRecorder&rdquo;</a> for more.</p></li><li><p><a href="http://crawler.archive.org/apidocs/org/archive/crawler/datamodel/CrawlURI.html#getContentSize()" target="_top">getContentSize()</a></p><p>If a document has been fetched, this method will return its
+          size in bytes.</p></li><li><p><a href="http://crawler.archive.org/apidocs/org/archive/crawler/datamodel/CrawlURI.html#getContentType()" target="_top">getContentType()</a></p><p>The content (mime) type of the fetched document.</p></li></ul></div><p>For more see the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/datamodel/CrawlURI.html" target="_top">Javadoc</a>
+      for CrawlURI.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="httprecorder"></a>11.2.&nbsp;The HttpRecorder</h3></div></div></div><p>A <a href="http://crawler.archive.org/apidocs/org/archive/util/HttpRecorder.html" target="_top">HttpRecorder</a>
+      is attached to each CrawlURI that is successfully fetched by the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/fetcher/FetchHTTP.html" target="_top">FetchHTTP</a>
+      processor. Despite its name it could be used for non-http transactions
+      if some care is taken. This class will likely be subject to some changes
+      in the future to make it more general.</p><p>Basically it pairs together a RecordingInputStream and
+      RecordingOutputStream to capture exactly a single HTTP
+      transaction.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N105C6"></a>11.2.1.&nbsp;Writing to HttpRecorder</h4></div></div></div><p>Before it can be written to a processor, it must get a reference to
+        the current threads HttpRecorder. This is done by invoking the
+        HttpRecorder class' static method <a href="http://crawler.archive.org/apidocs/org/archive/util/HttpRecorder.html#getHttpRecorder()" target="_top">getHttpRecorder()</a>.
+        This will return the HttpRecorder for the current thread. Fetchers
+        should then add a reference to this to the CrawlURI via the method
+        discussed above.</p><p>Once a processor has the HttpRecorder object it can access its
+        <a href="http://crawler.archive.org/apidocs/org/archive/io/RecordingInputStream.html" target="_top">RecordingInputStream</a>
+        stream via the <a href="http://crawler.archive.org/apidocs/org/archive/util/HttpRecorder.html#getRecordedInput()" target="_top">getRecordedInput()</a>
+        method. The RecordingInputStream extends InputStream and should be
+        used to capture the incoming document.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N105D9"></a>11.2.2.&nbsp;Reading from HttpRecorder</h4></div></div></div><p>Processors interested in the contents of the HttpRecorder can
+        get at its <a href="http://crawler.archive.org/apidocs/org/archive/io/ReplayCharSequence.html" target="_top">ReplayCharSequence</a>
+        via its <a href="http://crawler.archive.org/apidocs/org/archive/util/HttpRecorder.html#getReplayCharSequence()" target="_top">getReplayCharSequence()</a>
+        method. The ReplayCharSequence is basically a java.lang.CharSequence
+        that can be read normally. As discussed above the CrawlURI has a
+        method for getting at the existing HttpRecorder.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N105E6"></a>11.3.&nbsp;An example processor</h3></div></div></div><p>The following example is a very simple extractor.</p><pre class="programlisting">package org.archive.crawler.extractor;
+
+import java.util.regex.Matcher;
+
+import javax.management.AttributeNotFoundException;
+
+import org.archive.crawler.datamodel.CoreAttributeConstants;
+import org.archive.crawler.datamodel.CrawlURI;
+import org.archive.crawler.framework.Processor;
+import org.archive.crawler.settings.SimpleType;
+import org.archive.crawler.settings.Type;
+import org.archive.crawler.extractor.Link;
+import org.archive.util.TextUtils;
+
+/**
+ * A very simple extractor. Will assume that any string that matches a 
+ * configurable regular expression is a link.
+ *
+ * @author Kristinn Sigurdsson
+ */
+public class SimpleExtractor extends Processor
+    implements CoreAttributeConstants
+{
+    public static final String ATTR_REGULAR_EXPRESSION = "input-param";
+    public static final String DEFAULT_REGULAR_EXPRESSION = 
+        "http://([a-zA-Z0-9]+\\.)+[a-zA-Z0-9]+/"; //Find domains
+    
+    int numberOfCURIsHandled = 0; 
+    int numberOfLinksExtracted = 0;
+
+    public SimpleExtractor(String name) { <a name="simple_1" href="processor.html#co_simple_1"><img border="0" alt="1" src="images/callouts/1.png"></a>
+        super(name, "A very simple link extractor. Doesn't do anything useful.");
+        Type e;
+        e = addElementToDefinition(new SimpleType(ATTR_REGULAR_EXPRESSION,
+            "How deep to look into files for URI strings, in bytes",
+            DEFAULT_REGULAR_EXPRESSION));
+        e.setExpertSetting(true);
+    }
+
+    protected void innerProcess(CrawlURI curi) {
+
+        if (!curi.isHttpTransaction()) <a name="simple_2" href="processor.html#co_simple_2"><img border="0" alt="2" src="images/callouts/2.png"></a>
+        {
+            // We only handle HTTP at the moment.
+            return;
+        }
+        
+        numberOfCURIsHandled++; <a name="simple_3" href="processor.html#co_simple_3"><img border="0" alt="3" src="images/callouts/3.png"></a>
+
+        CharSequence cs = curi.getHttpRecorder().getReplayCharSequence(); <a name="simple_4" href="processor.html#co_simple_4"><img border="0" alt="4" src="images/callouts/4.png"></a>
+        String regexpr = null;
+        try {
+            regexpr = (String)getAttribute(ATTR_REGULAR_EXPRESSION,curi); <a name="simple_5" href="processor.html#co_simple_5"><img border="0" alt="5" src="images/callouts/5.png"></a>
+        } catch(AttributeNotFoundException e) {
+            regexpr = DEFAULT_REGULAR_EXPRESSION;
+        }
+
+        Matcher match = TextUtils.getMatcher(regexpr, cs); <a name="simple_6" href="processor.html#co_simple_6"><img border="0" alt="6" src="images/callouts/6.png"></a>
+        
+        while (match.find()){ 
+            String link = cs.subSequence(match.start(),match.end()).toString(); <a name="simple_7" href="processor.html#co_simple_7"><img border="0" alt="7" src="images/callouts/7.png"></a>
+            curi.createAndAddLink(link, Link.SPECULATIVE_MISC, Link.NAVLINK_HOP);<a name="simple_8" href="processor.html#co_simple_8"><img border="0" alt="8" src="images/callouts/8.png"></a>
+            numberOfLinksExtracted++; <a name="simple_9" href="processor.html#co_simple_9"><img border="0" alt="9" src="images/callouts/9.png"></a>
+            System.out.println("SimpleExtractor: " + link); <a name="simple_10" href="processor.html#co_simple_10"><img border="0" alt="10" src="images/callouts/10.png"></a>
+        }
+        
+        TextUtils.recycleMatcher(match); <a name="simple_11" href="processor.html#co_simple_11"><img border="0" alt="11" src="images/callouts/11.png"></a>
+    }
+
+    public String report() { <a name="simple_12" href="processor.html#co_simple_12"><img border="0" alt="12" src="images/callouts/12.png"></a>
+        StringBuffer ret = new StringBuffer();
+        ret.append("Processor: org.archive.crawler.extractor." +
+            "SimpleExtractor\n");
+        ret.append("  Function:          Example extractor\n");
+        ret.append("  CrawlURIs handled: " + numberOfCURIsHandled + "\n");
+        ret.append("  Links extracted:   " + numberOfLinksExtracted + "\n\n");
+
+        return ret.toString();
+    }
+}</pre><div class="calloutlist"><table summary="Callout list" border="0"><tr><td align="left" valign="top" width="5%"><a name="co_simple_1"></a><a href="#simple_1"><img border="0" alt="1" src="images/callouts/1.png"></a> </td><td align="left" valign="top"><p>The constructor. As with any Heritrix module it set's up the
+          processors name, description and configurable parameters. In this
+          case the only configurable parameter is the Regular expression that
+          will be used to find links. Both a name and a default value is
+          provided for this parameter. It is also marked as an expert
+          setting.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="co_simple_2"></a><a href="#simple_2"><img border="0" alt="2" src="images/callouts/2.png"></a> </td><td align="left" valign="top"><p>Check if the URI was fetched via a HTTP transaction. If not it
+          is probably a DNS lookup or was not fetched. Either way regular link
+          extraction is not possible.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="co_simple_3"></a><a href="#simple_3"><img border="0" alt="3" src="images/callouts/3.png"></a> </td><td align="left" valign="top"><p>If we get this far then we have a URI that the processor will
+          try to extract links from. Bump URI counter up by one.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="co_simple_4"></a><a href="#simple_4"><img border="0" alt="4" src="images/callouts/4.png"></a> </td><td align="left" valign="top"><p>Get the ReplayCharSequence. Can apply regular expressions on
+          it directly.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="co_simple_5"></a><a href="#simple_5"><img border="0" alt="5" src="images/callouts/5.png"></a> </td><td align="left" valign="top"><p>Look up the regular expression to use. If the attribute is not
+          found we'll use the default value.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="co_simple_6"></a><a href="#simple_6"><img border="0" alt="6" src="images/callouts/6.png"></a> </td><td align="left" valign="top"><p>Apply the regular expression. We'll use the <a href="http://crawler.archive.org/apidocs/org/archive/util/TextUtils.html#getMatcher(java.lang.String,%20java.lang.CharSequence)" target="_top">TextUtils.getMatcher()</a>
+          utility method for performance reasons.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="co_simple_7"></a><a href="#simple_7"><img border="0" alt="7" src="images/callouts/7.png"></a> </td><td align="left" valign="top"><p>Extract a link discovered by the regular expression from the
+          character sequence and store it as a string.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="co_simple_8"></a><a href="#simple_8"><img border="0" alt="8" src="images/callouts/8.png"></a> </td><td align="left" valign="top"><p>Add discovered link to the collection of regular links
+          extracted from the current URI.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="co_simple_9"></a><a href="#simple_9"><img border="0" alt="9" src="images/callouts/9.png"></a> </td><td align="left" valign="top"><p>Note that we just discovered another link.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="co_simple_10"></a><a href="#simple_10"><img border="0" alt="10" src="images/callouts/10.png"></a> </td><td align="left" valign="top"><p>This is a handy debug line that will print each extracted link
+          to the standard output. You would not want this in production
+          code.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="co_simple_11"></a><a href="#simple_11"><img border="0" alt="11" src="images/callouts/11.png"></a> </td><td align="left" valign="top"><p>Free up the matcher object. This too is for performance. See
+          the related <a href="http://crawler.archive.org/apidocs/org/archive/util/TextUtils.html#freeMatcher(java.util.regex.Matcher)" target="_top">javadoc</a>.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="co_simple_12"></a><a href="#simple_12"><img border="0" alt="12" src="images/callouts/12.png"></a> </td><td align="left" valign="top"><p>The report states the name of the processor, its function and
+          the totals of how many URIs were handled and how many links were
+          extracted. A fairly typical report for an extractor.</p></td></tr></table></div><p>Even though the example above is fairly simple the processor
+      nevertheless works as intended.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10665"></a>11.4.&nbsp;Things to keep in mind when writing a processor</h3></div></div></div><p></p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10669"></a>11.4.1.&nbsp;Interruptions</h4></div></div></div><p>Classes extending Processor should not trap
+        InterruptedExceptions.</p><p>InterruptedExceptions should be allowed to propagate to the
+        ToeThread executing the processor.</p><p>Also they should immediately exit their main method
+        (<code class="literal">innerProcess()</code>) if the
+        <code class="literal">interrupted</code> flag is set.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1067A"></a>11.4.2.&nbsp;One processor, many threads</h4></div></div></div><p>For each processor only one instance is created per crawl. As
+        there are multiple threads running, these processors must be carefully
+        written so that no conflicts arise. This usually means that class
+        variables can not be used for other things then gathering incremental
+        statistics and data.</p><p>There is a facility for having an instance per thread but it has
+        not been tested and will not be covered in this document.</p></div></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="scope.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="statistics.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">10.&nbsp;Writing a Scope&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;12.&nbsp;Writing a Statistics Tracker</td></tr></table></div></body></html>

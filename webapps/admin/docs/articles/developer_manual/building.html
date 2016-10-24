@@ -1,0 +1,76 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.&nbsp;Obtaining and building Heritrix</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix developer documentation"><link rel="up" href="index.html" title="Heritrix developer documentation"><link rel="prev" href="introduction.html" title="1.&nbsp;Introduction"><link rel="next" href="conventions.html" title="3.&nbsp;Coding conventions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">2.&nbsp;Obtaining and building Heritrix</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="introduction.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="conventions.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="building"></a>2.&nbsp;Obtaining and building Heritrix</h2></div></div></div><p></p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10036"></a>2.1.&nbsp;Obtaining Heritrix</h3></div></div></div><p>Heritrix can be obtained as packaged binary or source downloaded
+      from the crawler <a href="http://sourceforge.net/projects/archive-crawler" target="_top">sourceforge home
+      page</a>, or via checkout from archive-crawler.svn.sourceforge.net. See the
+      crawler <a href="http://sourceforge.net/svn/?group_id=73833" target="_top">sourceforge svn
+      page</a> for how to fetch from subversion. The <code class="literal">Module Name</code>
+      name to use checking out heritrix is
+      <code class="literal">ArchiveOpenCrawler</code>, the name Heritrix had before it
+      was called Heritrix.
+      </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Note, anonymous access does not
+      give you the current HEAD but a snapshot that can some times be up to 24
+      hours behind HEAD.</p></div><p>The packaged binary is named heritrix-?.?.?.tar.gz
+      (or heritrix-?.?.?.zip) and the packaged source is named
+      heritrix-?.?.?-src.tar.gz (or heritrix-?.?.?-src.zip) where ?.?.? is the
+      heritrix release version.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10050"></a>2.2.&nbsp;Building Heritrix</h3></div></div></div><p>You can build Heritrix from source using Maven. Heritrix build has
+      been tested against maven-1.0.2. Do not use Maven 2.x to build Heritrix.  See <a href="http://maven.apache.org" target="_top">maven.apache.org</a> for how to obtain
+      the binary and setup of your maven environment.</p><p>In addition to the base maven build, if you want to generate the
+      docbook user and developer manuals, you will need to add the
+      maven sdocbook plugin which can be found at
+      <a href="http://maven-plugins.sourceforge.net/maven-sdocbook-plugin/downloads.html" target="_top">this page</a> (If the sdocbook plugin is not present, the build
+      skips the docbook manual generation).
+      Be careful. Do not confuse the 'sdocbook' plugin with the similarly
+      named 'docbook' plugin. This latter converts docbook to xdocs where
+      what's wanted is the former, convert docbook xml to html. This
+      'sdocbook' plugin is used to generate the user
+	and developer documentation.</p><p>Download the plugin jar -- currently, as of this writing, its
+    maven-sdocbook-plugin-1.4.1.jar --
+    and put it into your maven repository plugins directory, usually      
+               at <code class="literal">${MAVEN_HOME}/plugins/</code> (in earlier
+               versions of maven, pre 1.0.2, plugins are at
+               <code class="literal">${HOME}/.maven/plugins/</code>).
+               </p><p>The sdocbook plugin has a dependency on the <a href="http://java.sun.com/products/jimi/" target="_top">jimi jar from sun</a> which
+      you will have to manually pull down and place into your maven
+      respository (Its got a sun license you must
+               accept so maven cannot autodownload).
+               Download the jimi package and unzip it.  Rename the
+               file named <code class="literal">JimiProClasses.zip</code>
+               as <code class="literal">jimi-1.0.jar</code> and put it into
+               your maven jars repository (Usually
+               <code class="literal">.maven/repository/jimi/jars</code>. You
+               may have to create the later directories manually).
+		Maven will be looking for a jar named 
+                jimi-1.0.jar.  Thats why you have to rename the
+		jimi class zip (jars are effectively zips).
+               </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>It may be necessary to alter the <code class="literal">sdocbook-plugin</code>
+       default configuration.  By default, sdocbook will download the latest 
+       version of <code class="literal">docbook-xsl</code>.  However, sdocbook hardcodes 
+       a specific version number for <code class="literal">docbook-xsl</code> in its
+       <code class="literal">plugin.properties</code> file.  If you get an error like
+       "Error while expanding ~/.maven/repository/docbook/zips/docbook-xsl-1.66.1.zip",
+       then you will have to manually edit sdocbook's properties.  First determine
+       the version of <code class="literal">docbook-xsl</code> that you have -- it's in 
+       <code class="literal">~/.maven/repository/docbook/zips</code>.  Once you have the
+       version number, edit <code class="literal">~/.maven/cache/maven-sdocbook-plugin-1.4/plugin-properties</code>
+       and change the <code class="literal">maven.sdocbook.stylesheets.version</code> property
+       to the version that was actually downloaded.
+       </p></div><p>To build a source checkout with Maven:<pre class="programlisting">% cd CHECKOUT_DIR 
+% $MAVEN_HOME/bin/maven dist</pre>In the target/distribution
+      subdir, you will find packaged source and binary builds. Run
+      $MAVEN_HOME/bin/maven -g for other Maven possibilities.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N100A4"></a>2.3.&nbsp;Running Heritrix</h3></div></div></div><p>See the User Manual [<a href="biblio.html#heritrix_user_manual" title="[Heritrix User Guide]"><span class="abbrev">Heritrix User Guide</span></a>] for
+      how to run the built Heritrix.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="eclipse"></a>2.4.&nbsp;Eclipse</h3></div></div></div><p>The development team uses Eclipse as the development environment.
+      This is of course optional, but for those who want to use Eclipse, you
+      can, at the head of the source tree, find Eclipse
+      <span class="emphasis"><em>.project</em></span> and <span class="emphasis"><em>.classpath</em></span>
+      configuration files that should make integrating the source checkout into
+      your Eclipse development environment straight-forward.</p><p>When running direct from checkout directories, rather than a Maven
+      build, be sure to use a JDK installation (so that JSP pages can
+      compile). You will probably also want to set the 'heritrix.development'
+      property (with the "-Dheritrix.development" VM command-line option) to
+      indicate certain files are in their development, rather than deployment,
+      locations. </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N100BA"></a>2.5.&nbsp;Integration self test</h3></div></div></div><p>Run the integration self test on the command line by doing the
+      following:<pre class="programlisting">% $HERITRIX_HOME/bin/heritrix --selftest</pre>This
+      will set the crawler going against itself, in particular, the selftest
+      webapp. When done, it runs an analysis of the produced arc files and
+      logs and dumps a ruling into <code class="filename">heritrix_out.log</code>. See
+      the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/selftest/package-summary.html" target="_top">org.archive.crawler.selftest</a>
+      package for more on how the selftest works.</p></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="introduction.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="conventions.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">1.&nbsp;Introduction&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;3.&nbsp;Coding conventions</td></tr></table></div></body></html>

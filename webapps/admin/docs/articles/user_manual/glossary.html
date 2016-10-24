@@ -1,0 +1,187 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Glossary</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix User Manual"><link rel="up" href="index.html" title="Heritrix User Manual"><link rel="prev" href="usecases.html" title="A.&nbsp;Common Heritrix Use Cases"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">Glossary</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="usecases.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;</td></tr></table><hr></div><div class="glossary" id="glossary"><div class="titlepage"><div><div><h2 class="title"><a name="glossary"></a>Glossary</h2></div></div></div><div class="glossdiv"><h3 class="title">Some definitions</h3><dl><dt><a name="bytes"></a>Bytes, KB and statistics</dt><dd><p>Heritrix adheres to the following conventions for displaying
+          byte and bit amounts:</p><p><pre class="programlisting">  Legend Type
+       B Bytes
+      KB Kilobytes - 1 KB = 1024 B
+      MB Megabytes - 1 MB = 1024 KB
+      GB Gigabytes - 1 GB = 1024 MB
+  
+       b bits
+      Kb Kilobits - 1 Kb = 1000 b
+      Mb Megabits - 1 Mb = 1000 Kb
+      Gb Gigabits - 1 Gb = 1000 Mb</pre></p><p>This also applies to all logs.</p></dd><dt><a name="checkpointing"></a>Checkpointing</dt><dd><p>Heritrix checkpointing has been heavily influenced by what
+          Mercator provided. In <a href="http://citeseer.nj.nec.com/najork01highperformance.html" target="_top">one of
+          the papers on Mercator</a> it is described this way:
+          &ldquo;<span class="quote">Checkpointing is an important part of any long-running
+          process such as a web crawl. By checkpointing we mean writing a
+          representation of the crawler's state to stable storage that, in the
+          event of a failure, is sufficient to allow the crawler to recover
+          its state by reading the checkpoint and to resume crawling from the
+          exact state it was in at the time of the checkpoint. By this
+          definition, in the event of a failure, any work performed after the
+          most recent checkpoint is lost, but none of the work up to the most
+          recent checkpoint. In Mercator, the frequency with which the
+          background thread performs a checkpoint is user-configurable; we
+          typically checkpoint anywhere from 1 to 4 times per
+          day.</span>&rdquo;</p><p>See <a href="outside.html#checkpoint" title="9.4.&nbsp;Checkpointing">Section&nbsp;9.4, &ldquo;Checkpointing&rdquo;</a> for discussion of the
+          Heritrix implementation.</p></dd><dt><a name="crawluri"></a>CrawlURI</dt><dd><p>A URI and its associated data such as parent URI, number of
+          links from seed etc.</p></dd><dt><a name="dates"></a>Dates and times</dt><dd><p>All times in Heritrix are GMT assuming the clock and timezone
+          on the local system are correct.</p><p>This means that all dates/times in logs are GMT, all dates and
+          times shown in the WUI are GMT and any times or dates entered by the
+          user need to be in GMT.</p></dd><dt><a name="discovereduris"></a>Discovered URIs</dt><dd><p>That is any URI that has been confirmed be within 'scope'.
+          This includes those that have been processed, are being processed
+          and have finished processing. Does not include URIs that have been
+          'forgotten' (deemed out of scope when trying to fetch, most likely
+          due to operator changing scope definition).</p><p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This only counts discovered URIs. Since the same URI can
+              (at least in most frontiers) be fetched multiple times, this
+              number may be somewhat lower then the combined queued, in
+              process and finished items combined due to duplicate URIs being
+              queued and processed. This variance is likely to be especially
+              high in Frontiers implementing 'revisit' strategies.</p></div></p></dd><dt><a name="discoverypath"></a>Discovery path</dt><dd><p>Each URI has a discovery path. The path contains one character
+          for each link or embed followed from the seed.</p><p>The character legend is as follows.</p><pre class="programlisting">  R - Redirect
+  E - Embed
+  X - Speculative embed (aggressive/Javascript link extraction)
+  L - Link
+  P - Prerequisite (as for DNS or robots.txt before another URI)</pre><p>The discovery path of seeds is an empty string.</p></dd><dt><a name="glossary_frontier"></a>Frontier</dt><dd><p>A Frontier is a pluggable module in Heritrix that maintains
+          the internal state of the crawl. See <a href="config.html#frontier" title="6.1.2.&nbsp;Frontier">Section&nbsp;6.1.2, &ldquo;Frontier&rdquo;</a>.</p></dd><dt><a name="holdingvcrawling"></a>"Holding Jobs" vs. "Crawling Jobs"</dt><dd><p>The mode <span class="emphasis"><em>Crawling Jobs</em></span> generally means
+          that the crawler will start executing a job as soon as one is made
+          available in the pending jobs queue (as long as there is not a job
+          already running).</p><p>If the crawler is in the <span class="emphasis"><em>Holding Jobs</em></span>
+          mode, jobs added to the pending jobs queue will be held; they will
+          not be started, even if there are no jobs currently being
+          run.</p></dd><dt>Host</dt><dd><p>A host can serve multiple domains or a single domain can be
+          served by multiple hosts. For our purposes so far, host == hostname
+          in URI. DNS is not considered; it is volatile and may be
+          unavailable. So when Heritrix gets the URIs...<pre class="programlisting">  http://www.example.com
+  http://search.example.com
+  http://201.199.7.15
+</pre>...even if they all point to the 201.199.7.15 IP, they are 3
+          different logical hosts (at the level of the URI/HTTP
+          protocol).</p><p>Conformant HTTP proxies behave similarly, we think, even if
+          they know www.example.com == 201.199.7.15, they will not consider
+          them interchangeable.</p><p>This is not ideal for politeness where we'd want politeness
+          rules to apply to the physical host rather than the logical.</p></dd><dt><a name="link-hop-count"></a>Link hop count</dt><dd><p>Number of link follow from the seed to the current URI. Seeds
+          have a link hop count of 0.</p><p>This number is equal to counting the 'L's in a URIs discovery
+          path.</p></dd><dt>Pending URIs</dt><dd><p>Number of URIs that are awaiting detailed processing.</p><p>Number of discovered URIs that have not been inspected for
+          scope or duplicates. Depending on the implementation of the Frontier
+          this might always be zero. It may also be an adjusted number that
+          tries to account for duplicates by estimation.</p></dd><dt><a name="politeness"></a>Politeness</dt><dd><p>Politeness refers to attempts by the crawler software to limit
+          load on a site. Without politeness restrictions the crawler might
+          otherwise overwhelm smaller sites and even cause moderately sized
+          sites to slow down significantly.</p><p>Unless you have express permission to crawl a site
+          aggressively you should apply strict politeness rules to any
+          crawl.</p></dd><dt><a name="queueduris"></a>Queued URIs</dt><dd><p>Number of URIs queued up and waiting for processing.</p><p>This includes any URIs that failed but will be retried.
+          Basically this is any discovered URI that has not either been
+          processed or is being processed.</p></dd><dt><a name="regexpr"></a>Regular expressions</dt><dd><p>All regular expressions used by Heritrix are Java regular
+          expressions.</p><p>Java regular expressions differ from those used in Perl, for
+          example, in several ways. For detailed info on Java regular
+          expressions see the Java API for
+          <code class="literal">java.util.regex.Pattern</code> on Sun's home page
+          (<a href="http://java.sun.com" target="_top">java.sun.com</a>).</p><p>For API of Java SE v1.4.2 see <a href="http://java.sun.com/j2se/1.4.2/docs/api/index.html" target="_top">http://java.sun.com/j2se/1.4.2/docs/api/index.html</a>.
+          It is recommended you lookup the API for the version of Java that is
+          being used to run Heritrix.</p></dd><dt><a name="server"></a>Server</dt><dd><p>A server is a service on a <a href="glossary.html#host">Host</a>. There
+          might be more than one service on a host differentiated by port
+          number.</p></dd><dt><a name="statuscodes"></a>Status codes</dt><dd><p>Each crawled URI gets a status code. This code (or number) is
+          an indication of what happened when Heritrix tried to fetch the
+          URI.</p><p>Codes ranging from 200 to 599 are standard HTTP response codes
+          and information about their meanings is available at the <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html" target="_top">World
+          Wide Web consortium's web page</a>.</p><p>Other status codes used by Heritrix (From <a href="http://crawler.archive.org/xref/org/archive/crawler/datamodel/FetchStatusCodes.html#38" target="_top">org.archive.crawler.datamodel.FetchStatusCodes</a>):<pre class="programlisting">   Code Meaning
+      1 Successful DNS lookup
+      0 Fetch never tried (perhaps protocol unsupported or illegal URI)
+     -1 DNS lookup failed
+     -2 HTTP connect failed
+     -3 HTTP connect broken
+     -4 HTTP timeout (before any meaningful response received)
+     -5 Unexpected runtime exception; see runtime-errors.log
+     -6 Prerequisite domain-lookup failed, precluding fetch attempt
+     -7 URI recognized as unsupported or illegal
+     -8 Multiple retries all failed, retry limit reached
+    -50 Temporary status assigned URIs awaiting preconditions; appearance in
+        logs may be a bug
+    -60 Failure status assigned URIs which could not be queued by the 
+        Frontier (and may in fact be unfetchable)
+    -61 Prerequisite robots.txt-fetch failed, precluding a fetch attempt
+    -62 Some other prerequisite failed, precluding a fetch attempt
+    -63 A prerequisite (of any type) could not be scheduled, precluding a 
+        fetch attempt
+  -3000 Severe Java 'Error' conditions (OutOfMemoryError, StackOverflowError,
+        etc.) during URI processing.
+  -4000 'chaff' detection of traps/content of negligible value applied
+  -4001 Too many link hops away from seed
+  -4002 Too many embed/transitive hops away from last URI in scope
+  -5000 Out of scope upon reexamination (only happens if scope changes during 
+        crawl)
+  -5001 Blocked from fetch by user setting
+  -5002 Blocked by a custom processor
+  -5003 Blocked due to exceeding an established quota
+  -5004 Blocked due to exceeding an established runtime
+  -6000 Deleted from Frontier by user
+  -7000 Processing thread was killed by the operator (perhaps because of a
+        hung condition)
+  -9998 Robots.txt rules precluded fetch</pre></p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Codes and explainations are also available under the Help
+            link in the web UI.</p></div><p>Please note that status codes defined by Heritrix may be
+          subject to change between versions, especially new codes may be
+          added to tackle a wider array of situations.</p></dd><dt><a name="surt"></a>SURT</dt><dd><p>SURT stands for Sort-friendly URI Reordering Transform, and is
+          a transformation applied to URIs which makes their left-to-right
+          representation better match the natural hierarchy of domain
+          names.</p><p>A URI &lt;scheme://domain.tld/path?query&gt; has SURT form
+          &lt;scheme://(tld,domain,)/path?query&gt;.</p><p>Conversion to SURT form also involves making all characters
+          lowercase, and changing the 'https' scheme to 'http'. Further, the
+          '/' after a URI authority component -- for example, the third slash
+          in a regular HTTP URI -- will only appear in the SURT form if it
+          appeared in the plain URI form. (This convention proves important
+          when using real URIs as a shorthand for SURT prefixes, as described
+          below.)</p><p>SURT form URIs are typically not used to specify exact URIs
+          for fetching. Rather, SURT form is useful when comparing or sorting
+          URIs. For example, URIs in SURT format sort into natural groups --
+          all 'archive.org' URIs will be adjacent, regardless of what
+          subdomains like 'books.archive.org' or 'movies.archive.org' are
+          used.</p><p>Most importantly, a SURT form URI, or a truncated version of a
+          SURT form URI, can be used as a <a href="glossary.html#surtprefix">SURT prefix</a>. A
+          SURT prefix will often correspond to all URIs within a common 'area'
+          of interest for crawling. For example, the prefix
+          &lt;http://(is,&gt; will be shared by all URIs in the '.is'
+          top-level domain.</p></dd><dt><a name="surtprefix"></a>SURT prefix</dt><dd><p>A URI in <a href="glossary.html#surt">SURT</a> form, especially if
+          truncated, may be of use as a "SURT prefix", a shared prefix string
+          of all SURT form URIs in the same 'area' of interest for web
+          crawling.</p><p>For example, the prefix &lt;http://(is,&gt; will be shared by
+          all SURT form URIs in the '.is' top-level domain. The prefix
+          &lt;http://(org,archive,www,)/movies&gt; (which is also a valid full
+          SURT form URI) will be shared by all URIs at www.archive.org with a
+          path beginning '/movies'.</p><p>A collection of sorted SURT prefixes is an efficient way to
+          specify a desired crawl scope: any URI whose SURT form starts with
+          any of the prefixes should be included.</p><p>A small set of conventions can be also be used to calculate an
+          "implied SURT prefix" from a regular URI, such as a URI supplied as
+          a crawl seed. These conventions are:</p><div class="orderedlist"><ol type="1"><li><p>Convert the URI to its SURT form.</p></li><li><p>If there are at least 3 slashes ('/') in the SURT form,
+              remove everything after the last slash. As examples,
+              &lt;http://(org,example,www,)/main/subsection/&gt; is unchanged;
+              &lt;http://(org,example,www,)/main/subsection&gt; is truncated
+              to &lt;http://(org,example,www,)/main/&gt;;
+              &lt;http://(org,example,www,)/&gt; is unchanged; and
+              &lt;http://(org,example,www,)&gt; is unchanged.</p></li><li><p>If the resulting form ends in an off-parenthesis (')'),
+              remove the off-parenthesis. So each of the above examples except
+              for the last is unchanged, while the last
+              &lt;http://(org,example,www,)&gt; becomes
+              &lt;http://(org,example,www,&gt;.</p></li></ol></div><p>This allows many seed URIs, in their usual form, to imply the
+          most useful SURT prefixes for crawling related URIs -- with the
+          presence or absence of a trailing '/' on URIs without further
+          path-info being a subtle indicator as to whether subdomains of the
+          supplied domain should be included.</p><p>For example, seed &lt;http://www.archive.org/&gt; will become
+          SURT form and implied SURT prefix
+          &lt;http://(org,archive,www,)/&gt;, and is the prefix of all SURT
+          form URIs on www.archive.org. However, any subdomain URI like
+          &lt;http://homepages.www.archive.org/directory&gt; would be ruled
+          out, because its SURT form
+          &lt;http://(org,archive,www,homepages,)/directory&gt; does not begin
+          with the full SURT prefix, including the ')/', deduced from the
+          seed.</p><p>In contrast, seed &lt;http://www.archive.org&gt; (note the
+          lack of trailing slash) will become SURT form
+          &lt;http://(org,archive,www,)&gt;, and implied SURT prefix
+          &lt;http://(org,archive,www,&gt; (note the lack of trailing ')').
+          This will be the prefix of all URIs on www.archive.org, as well as
+          any subdomain URIs like
+          &lt;http://homepages.www.archive.org/directory&gt;, because the full
+          SURT prefix appears in subdomain URI SURT forms.</p></dd><dt><a name="toethreads"></a>Toe Threads</dt><dd><p>When crawling Heritrix employs a configurable number of Toe
+          Threads to process each URI.</p><p>Each of these threads will request a URI from the Frontier
+          (<a href="config.html#frontier" title="6.1.2.&nbsp;Frontier">Section&nbsp;6.1.2, &ldquo;Frontier&rdquo;</a>), apply each of the set Processors
+          (<a href="config.html#processors" title="6.1.3.&nbsp;Processing Chains">Section&nbsp;6.1.3, &ldquo;Processing Chains&rdquo;</a>) to it and finally report it as
+          completed back to the Frontier.</p></dd></dl></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="usecases.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;</td></tr><tr><td valign="top" align="left" width="40%">A.&nbsp;Common Heritrix Use Cases&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;</td></tr></table></div></body></html>

@@ -1,0 +1,336 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>8.&nbsp;Writing a Frontier</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix developer documentation"><link rel="up" href="index.html" title="Heritrix developer documentation"><link rel="prev" href="uri.html" title="7.&nbsp;Some notes on the URI classes"><link rel="next" href="writefilter.html" title="9.&nbsp;Writing a Filter"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">8.&nbsp;Writing a Frontier</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="uri.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="writefilter.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="frontier"></a>8.&nbsp;Writing a Frontier</h2></div></div></div><p>As mentioned before, the Frontier is a pluggable module
+    responsible for deciding which URI to process next, and when. The Frontier
+    is also responsible for keeping track of other aspects of the crawls
+    internal state which in turn can be used for logging and reporting. Even
+    though the responsibilities of the Frontier might not look overwhelming,
+    it is one of the hardest modules to write well. You should really
+    investigate if your needs could not be met by the existing Frontier, or
+    at least mostly met by subclassing an existing Frontier. With
+    these warnings in mind, let's go ahead and create a really simple
+    Frontier.</p><p><pre class="programlisting">package mypackage;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.archive.crawler.datamodel.CandidateURI;
+import org.archive.crawler.datamodel.CrawlURI;
+import org.archive.crawler.datamodel.FetchStatusCodes;
+import org.archive.crawler.datamodel.UURI;
+import org.archive.crawler.framework.CrawlController;
+import org.archive.crawler.framework.Frontier;
+import org.archive.crawler.framework.FrontierMarker;
+import org.archive.crawler.framework.exceptions.FatalConfigurationException;
+import org.archive.crawler.framework.exceptions.InvalidFrontierMarkerException;
+import org.archive.crawler.settings.ModuleType;
+
+
+/**
+ * A simple Frontier implementation for tutorial purposes
+ */
+public class MyFrontier extends ModuleType implements Frontier,
+        FetchStatusCodes {
+    // A list of the discovered URIs that should be crawled.
+    List pendingURIs = new ArrayList();
+    
+    // A list of prerequisites that needs to be met before any other URI is
+    // allowed to be crawled, e.g. DNS-lookups
+    List prerequisites = new ArrayList();
+    
+    // A hash of already crawled URIs so that every URI is crawled only once.
+    Map alreadyIncluded = new HashMap();
+    
+    // Reference to the CrawlController.
+    CrawlController controller;
+
+    // Flag to note if a URI is being processed.
+    boolean uriInProcess = false;
+    
+    // top-level stats
+    long successCount = 0;
+    long failedCount = 0;
+    long disregardedCount = 0;
+    long totalProcessedBytes = 0;
+
+    public MyFrontier(String name) {
+        super(Frontier.ATTR_NAME, "A simple frontier.");
+    }
+
+    public void initialize(CrawlController controller)
+            throws FatalConfigurationException, IOException {
+        this.controller = controller;
+        
+        // Initialize the pending queue with the seeds
+        this.controller.getScope().refreshSeeds();
+        List seeds = this.controller.getScope().getSeedlist();
+        synchronized(seeds) {
+            for (Iterator i = seeds.iterator(); i.hasNext();) {
+                UURI u = (UURI) i.next();
+                CandidateURI caUri = new CandidateURI(u);
+                caUri.setSeed();
+                schedule(caUri);
+            }
+        }
+    }
+
+    public synchronized CrawlURI next(int timeout) throws InterruptedException {
+        if (!uriInProcess &amp;&amp; !isEmpty()) {
+            uriInProcess = true;
+            CrawlURI curi;
+            if (!prerequisites.isEmpty()) {
+                curi = CrawlURI.from((CandidateURI) prerequisites.remove(0));
+            } else {
+                curi = CrawlURI.from((CandidateURI) pendingURIs.remove(0));
+            }
+            curi.setServer(controller.getServerCache().getServerFor(curi));
+            return curi;
+        } else {
+            wait(timeout);
+            return null;
+        }
+    }
+
+    public boolean isEmpty() {
+        return pendingURIs.isEmpty() &amp;&amp; prerequisites.isEmpty();
+    }
+
+    public synchronized void schedule(CandidateURI caURI) {
+        // Schedule a uri for crawling if it is not already crawled
+        if (!alreadyIncluded.containsKey(caURI.getURIString())) {
+            if(caURI.needsImmediateScheduling()) {
+                prerequisites.add(caURI);
+            } else {
+                pendingURIs.add(caURI);
+            }
+            alreadyIncluded.put(caURI.getURIString(), caURI);
+        }
+    }
+
+    public void batchSchedule(CandidateURI caURI) {
+        schedule(caURI);
+    }
+
+    public void batchFlush() {
+    }
+
+    public synchronized void finished(CrawlURI cURI) {
+        uriInProcess = false;
+        if (cURI.isSuccess()) {
+            successCount++;
+            totalProcessedBytes += cURI.getContentSize();
+            controller.fireCrawledURISuccessfulEvent(cURI);
+            cURI.stripToMinimal();
+        } else if (cURI.getFetchStatus() == S_DEFERRED) {
+            cURI.processingCleanup();
+            alreadyIncluded.remove(cURI.getURIString());
+            schedule(cURI);
+        } else if (cURI.getFetchStatus() == S_ROBOTS_PRECLUDED
+                || cURI.getFetchStatus() == S_OUT_OF_SCOPE
+                || cURI.getFetchStatus() == S_BLOCKED_BY_USER
+                || cURI.getFetchStatus() == S_TOO_MANY_EMBED_HOPS
+                || cURI.getFetchStatus() == S_TOO_MANY_LINK_HOPS
+                || cURI.getFetchStatus() == S_DELETED_BY_USER) {
+            controller.fireCrawledURIDisregardEvent(cURI);
+            disregardedCount++;
+            cURI.stripToMinimal();
+        } else {
+            controller.fireCrawledURIFailureEvent(cURI);
+            failedCount++;
+            cURI.stripToMinimal();
+        }
+        cURI.processingCleanup();
+    }
+
+    public long discoveredUriCount() {
+        return alreadyIncluded.size();
+    }
+
+    public long queuedUriCount() {
+        return pendingURIs.size() + prerequisites.size();
+    }
+
+    public long finishedUriCount() {
+        return successCount + failedCount + disregardedCount;
+    }
+
+    public long successfullyFetchedCount() {
+        return successCount;
+    }
+
+    public long failedFetchCount() {
+        return failedCount;
+    }
+
+    public long disregardedFetchCount() {
+        return disregardedCount;
+    }
+
+    public long totalBytesWritten() {
+        return totalProcessedBytes;
+    }
+
+    public String report() {
+        return "This frontier does not return a report.";
+    }
+
+    public void importRecoverLog(String pathToLog) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    public FrontierMarker getInitialMarker(String regexpr,
+            boolean inCacheOnly) {
+        return null;
+    }
+
+    public ArrayList getURIsList(FrontierMarker marker, int numberOfMatches,
+            boolean verbose) throws InvalidFrontierMarkerException {
+        return null;
+    }
+
+    public long deleteURIs(String match) {
+        return 0;
+    }
+
+}</pre></p><p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>To test this new Frontier you must add it to the classpath. Then
+        to let the user interface be aware of it, you must add the fully
+        qualified classname to the 
+        <code class="filename">Frontier.options</code> file in the 
+        <code class="literal">conf/modules</code>
+        directory.</p></div></p><p>This Frontier hands out the URIs in the order they are discovered,
+    one at a time. To make sure that the web servers are not overloaded it
+    waits until a URI is finished processing before it hands out the next one.
+    It does not retry URIs for other reasons than prerequisites not met (DNS
+    lookup and fetching of robots.txt). This Frontier skips a lot of the tasks
+    a real Frontier should take care of. The first thing is that it doesn't
+    log anything. A real Frontier would log what happened to every URI. A real
+    Frontier would also be aware of the fact that Heritrix is multi threaded
+    and try to process as many URIs simultaneously as allowed by the number of
+    threads without breaking the politeness rules. Take a look at <a href="http://crawler.archive.org/xref/org/archive/crawler/frontier/BdbFrontier.html" target="_top">Frontier</a>
+    <a href="http://crawler.archive.org/apidocs/org/archive/crawler/frontier/BdbFrontier.html" target="_top">(javadoc)</a>
+    to see how a full blown Frontier might look like.</p><p>All Frontiers must implement the Frontier interface. Most
+    Frontiers will also implement the FetchStatusCodes because these codes are
+    used to determine what to do with a URI after it has returned from the
+    processing cycle. In addition you might want to implement the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/event/CrawlStatusListener.html" target="_top">CrawlStatusListener</a>
+    which enables the Frontier to be aware of starts, stops, and pausing of a
+    crawl. For this simple example we don't care about that. The most
+    important methods in the Frontier interface are:<div class="orderedlist"><ol type="1"><li><p>next(int timeout)</p></li><li><p>schedule(CandidateURI caURI)</p></li><li><p>finished(CrawlURI cURI)</p></li></ol></div>The <a href="frontier.html#figure_frontier_sequence" title="Figure&nbsp;5.&nbsp;Frontier data flow">Figure&nbsp;5, &ldquo;Frontier data flow&rdquo;</a> shows a
+    simplified sequence diagram of the Frontiers collaboration with other
+    classes. For readability, the processors (of which there are more than
+    showed in this diagram) are chained together in this diagram. It is
+    actually the ToeThread that runs each processor in turn.<div class="figure"><a name="figure_frontier_sequence"></a><p class="title"><b>Figure&nbsp;5.&nbsp;Frontier data flow</b></p><div class="mediaobject"><img src="../frontier1.png" alt="Frontier data flow"></div></div>As the diagram shows, the next() method of the Frontier will
+    return URI's from the prerequisite list before the pending queue is
+    considered. Let's take a closer look at the
+    implementation.<pre class="programlisting">    public synchronized CrawlURI next(int timeout) throws InterruptedException {
+        if (!uriInProcess &amp;&amp; !isEmpty()) { <a name="frontierNextEx_inProcess" href="frontier.html#frontierNextEx_txt_inProcess"><img border="0" alt="1" src="images/callouts/1.png"></a>
+            uriInProcess = true;
+            CrawlURI curi;
+            if (!prerequisites.isEmpty()) { <a name="frontierNextEx_prerequisite" href="frontier.html#frontierNextEx_txt_prerequisite"><img border="0" alt="2" src="images/callouts/2.png"></a>
+                curi = CrawlURI.from((CandidateURI) prerequisites.remove(0));
+            } else {
+                curi = CrawlURI.from((CandidateURI) pendingURIs.remove(0));
+            }
+            curi.setServer(controller.getServerCache().getServerFor(curi)); <a name="frontierNextEx_setServer" href="frontier.html#frontierNextEx_txt_setServer"><img border="0" alt="3" src="images/callouts/3.png"></a>
+            return curi;
+        } else {
+            wait(timeout); <a name="frontierNextEx_wait" href="frontier.html#frontierNextEx_txt_wait"><img border="0" alt="4" src="images/callouts/4.png"></a>
+            return null;
+        }
+    }</pre> <div class="calloutlist"><table summary="Callout list" border="0"><tr><td align="left" valign="top" width="5%"><a name="frontierNextEx_txt_inProcess"></a><a href="#frontierNextEx_inProcess"><img border="0" alt="1" src="images/callouts/1.png"></a> </td><td align="left" valign="top"><p>First we check if there is a URI in process already, then
+          check if there are any URIs left to crawl.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="frontierNextEx_txt_prerequisite"></a><a href="#frontierNextEx_prerequisite"><img border="0" alt="2" src="images/callouts/2.png"></a> </td><td align="left" valign="top"><p>Make sure that we let the prerequisites be processed before
+          any regular pending URI. This ensures that DNS-lookups and fetching
+          of robots.txt is done before any "real" data is fetched from the
+          host. Note that DNS-lookups are treated as an ordinary URI from the
+          Frontier's point of view. The next lines pulls a CandidateURI from
+          the right list and turn it into a CrawlURI suitable for being
+          crawled. The <a href="http://crawler.archive.org/apidocs/org/archive/crawler/datamodel/CrawlURI.html#from(org.archive.crawler.datamodel.CandidateURI)" target="_top">CrawlURI.from(CandidateURI)</a>
+          method is used because the URI in the list might already be a
+          CrawlURI and could then be used directly. This is the case for URIs
+          where the preconditions was not met. As we will see further down
+          these URIs are put back into the pending queue.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="frontierNextEx_txt_setServer"></a><a href="#frontierNextEx_setServer"><img border="0" alt="3" src="images/callouts/3.png"></a> </td><td align="left" valign="top"><p>This line is very important. Before a CrawlURI can be
+          processed it must be associated with a CrawlServer. The reason for
+          this, among others, is to be able to check preconditions against the
+          URI's host (for example so that DNS-lookups are done only once for
+          each host, not for every URI).</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="frontierNextEx_txt_wait"></a><a href="#frontierNextEx_wait"><img border="0" alt="4" src="images/callouts/4.png"></a> </td><td align="left" valign="top"><p>In this simple example, we are not being aware of the fact
+          that Heritrix is multithreaded. We just let the method wait the
+          timeout time and the return null if no URIs where ready. The
+          intention of the timeout is that if no URI could be handed out at
+          this time, we should wait the timeout before returning null. But if
+          a URI becomes available during this time it should wake up from the
+          wait and hand it out. See the javadoc for <a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/Frontier.html#next(int)" target="_top">next(timeout)</a>
+          to get an explanation.</p></td></tr></table></div></p><p>When a URI has been sent through the processor chain it ends up in
+    the LinksScoper. All URIs should end up here even if the preconditions
+    where not met and the fetching, extraction and writing to the archive has
+    been postponed. The LinksScoper iterates through all new URIs
+    (prerequisites and/or extracted URIs) added to the CrawlURI and, if they
+    are within the scope, converts them from Link objects to CandidateURI
+    objects.  Later in the postprocessor chain, the FrontierScheduler adds
+    them to Frontier by calling the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/Frontier.html#schedule(org.archive.crawler.datamodel.CandidateURI)" target="_top">schedule(CandidateURI)</a>
+    method. There is also a batch version of the schedule method for
+    efficiency, see the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/Frontier.html" target="_top">javadoc</a>
+    for more information. This simple Frontier treats them the
+    same.<pre class="programlisting">    public synchronized void schedule(CandidateURI caURI) {
+        // Schedule a uri for crawling if it is not already crawled
+        if (!alreadyIncluded.containsKey(caURI.getURIString())) { <a name="frontierScheduleEx_containsKey" href="frontier.html#frontierScheduleEx_txt_containsKey"><img border="0" alt="1" src="images/callouts/1.png"></a>
+            if(caURI.needsImmediateScheduling()) { <a name="frontierScheduleEx_prerequisite" href="frontier.html#frontierScheduleEx_txt_prerequisite"><img border="0" alt="2" src="images/callouts/2.png"></a>
+                prerequisites.add(caURI);
+            } else {
+                pendingURIs.add(caURI);
+            }
+            alreadyIncluded.put(caURI.getURIString(), caURI); <a name="frontierScheduleEx_addIncluded" href="frontier.html#frontierScheduleEx_txt_addIncluded"><img border="0" alt="3" src="images/callouts/3.png"></a>
+        }
+    }</pre> <div class="calloutlist"><table summary="Callout list" border="0"><tr><td align="left" valign="top" width="5%"><a name="frontierScheduleEx_txt_containsKey"></a><a href="#frontierScheduleEx_containsKey"><img border="0" alt="1" src="images/callouts/1.png"></a> </td><td align="left" valign="top"><p>This line checks if we already has scheduled this URI for
+          crawling. This way no URI is crawled more than once.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="frontierScheduleEx_txt_prerequisite"></a><a href="#frontierScheduleEx_prerequisite"><img border="0" alt="2" src="images/callouts/2.png"></a> </td><td align="left" valign="top"><p>If the URI is marked by a processor as a URI that needs
+          immediate scheduling, it is added to the prerequisite queue.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="frontierScheduleEx_txt_addIncluded"></a><a href="#frontierScheduleEx_addIncluded"><img border="0" alt="3" src="images/callouts/3.png"></a> </td><td align="left" valign="top"><p>Add the URI to the list of already scheduled URIs.</p></td></tr></table></div></p><p>After all the processors are finished (including the
+    FrontierScheduler's
+    scheduling of new URIs), the ToeThread calls the Frontiers <a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/Frontier.html#finished(org.archive.crawler.datamodel.CrawlURI)" target="_top">finished(CrawlURI)</a>
+    method submitting the CrawlURI that was sent through the
+    chain.<pre class="programlisting">    public synchronized void finished(CrawlURI cURI) {
+        uriInProcess = false;
+        if (cURI.isSuccess()) { <a name="frontierFinishedEx_isSuccess" href="frontier.html#frontierFinishedEx_txt_isSuccess"><img border="0" alt="1" src="images/callouts/1.png"></a>
+            successCount++;
+            totalProcessedBytes += cURI.getContentSize();
+            controller.fireCrawledURISuccessfulEvent(cURI); <a name="frontierFinishedEx_fireEvent" href="frontier.html#frontierFinishedEx_txt_fireEvent"><img border="0" alt="2" src="images/callouts/2.png"></a>
+            cURI.stripToMinimal(); <a name="frontierFinishedEx_strip" href="frontier.html#frontierFinishedEx_txt_strip"><img border="0" alt="3" src="images/callouts/3.png"></a>
+        } else if (cURI.getFetchStatus() == S_DEFERRED) { <a name="frontierFinishedEx_deferred" href="frontier.html#frontierFinishedEx_txt_deferred"><img border="0" alt="4" src="images/callouts/4.png"></a>
+            cURI.processingCleanup(); <a name="frontierFinishedEx_cleanup" href="frontier.html#frontierFinishedEx_txt_cleanup"><img border="0" alt="5" src="images/callouts/5.png"></a>
+            alreadyIncluded.remove(cURI.getURIString());
+            schedule(cURI);
+        } else if (cURI.getFetchStatus() == S_ROBOTS_PRECLUDED <a name="frontierFinishedEx_disregard" href="frontier.html#frontierFinishedEx_txt_disregard"><img border="0" alt="6" src="images/callouts/6.png"></a>
+                || cURI.getFetchStatus() == S_OUT_OF_SCOPE
+                || cURI.getFetchStatus() == S_BLOCKED_BY_USER
+                || cURI.getFetchStatus() == S_TOO_MANY_EMBED_HOPS
+                || cURI.getFetchStatus() == S_TOO_MANY_LINK_HOPS
+                || cURI.getFetchStatus() == S_DELETED_BY_USER) {
+            controller.fireCrawledURIDisregardEvent(cURI); <a name="frontierFinishedEx_fireEvent2" href="frontier.html#frontierFinishedEx_txt_fireEvent"><img border="0" alt="7" src="images/callouts/7.png"></a>
+            disregardedCount++;
+            cURI.stripToMinimal(); <a name="frontierFinishedEx_strip2" href="frontier.html#frontierFinishedEx_txt_strip"><img border="0" alt="8" src="images/callouts/8.png"></a>
+        } else { <a name="frontierFinishedEx_fail" href="frontier.html#frontierFinishedEx_txt_fail"><img border="0" alt="9" src="images/callouts/9.png"></a>
+            controller.fireCrawledURIFailureEvent(cURI); <a name="frontierFinishedEx_fireEvent3" href="frontier.html#frontierFinishedEx_txt_fireEvent"><img border="0" alt="10" src="images/callouts/10.png"></a>
+            failedCount++;
+            cURI.stripToMinimal(); <a name="frontierFinishedEx_strip3" href="frontier.html#frontierFinishedEx_txt_strip"><img border="0" alt="11" src="images/callouts/11.png"></a>
+        }
+        cURI.processingCleanup(); <a name="frontierFinishedEx_cleanup2" href="frontier.html#frontierFinishedEx_txt_cleanup"><img border="0" alt="12" src="images/callouts/12.png"></a>
+    }</pre>The processed URI will have status information attached
+    to it. It is the task of the finished method to check these statuses and
+    treat the URI according to that (see <a href="refactor_frontier_dispositions.html" title="2.&nbsp;The Frontiers handling of dispositions">Section&nbsp;2, &ldquo;The Frontiers handling of dispositions&rdquo;</a>).<div class="calloutlist"><table summary="Callout list" border="0"><tr><td align="left" valign="top" width="5%"><a name="frontierFinishedEx_txt_isSuccess"></a><a href="#frontierFinishedEx_isSuccess"><img border="0" alt="1" src="images/callouts/1.png"></a> </td><td align="left" valign="top"><p>If the URI was successfully crawled we update some counters
+          for statistical purposes and "forget about it".</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="frontierFinishedEx_txt_fireEvent"></a><a href="#frontierFinishedEx_fireEvent"><img border="0" alt="2" src="images/callouts/2.png"></a> <a href="#frontierFinishedEx_fireEvent2"><img border="0" alt="7" src="images/callouts/7.png"></a> <a href="#frontierFinishedEx_fireEvent3"><img border="0" alt="10" src="images/callouts/10.png"></a> </td><td align="left" valign="top"><p>Modules can register with the <a href="http://crawler.archive.org/apidocs/org/archive/crawler/framework/CrawlController.html" target="_top">controller</a>
+          to receive <a href="http://crawler.archive.org/apidocs/org/archive/crawler/event/CrawlURIDispositionListener.html" target="_top">notifications</a>
+          when decisions are made on how to handle a CrawlURI. For example the
+          <a href="http://crawler.archive.org/apidocs/org/archive/crawler/admin/StatisticsTracker.html" target="_top">StatisticsTracker</a>
+          is dependent on these notifications to report the crawler's
+          progress. Different fireEvent methods are called on the controller
+          for each of the different actions taken on the CrawlURI.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="frontierFinishedEx_txt_strip"></a><a href="#frontierFinishedEx_strip"><img border="0" alt="3" src="images/callouts/3.png"></a> <a href="#frontierFinishedEx_strip2"><img border="0" alt="8" src="images/callouts/8.png"></a> <a href="#frontierFinishedEx_strip3"><img border="0" alt="11" src="images/callouts/11.png"></a> </td><td align="left" valign="top"><p>We call the stripToMinimal method so that all data structures
+          referenced by the URI are removed. This is done so that any class
+          that might want to serialize the URI could be do this as efficient
+          as possible.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="frontierFinishedEx_txt_deferred"></a><a href="#frontierFinishedEx_deferred"><img border="0" alt="4" src="images/callouts/4.png"></a> </td><td align="left" valign="top"><p>If the URI was deferred because of a unsatisfied precondition,
+          reschedule it. Also make sure it is removed from the already
+          included map.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="frontierFinishedEx_txt_cleanup"></a><a href="#frontierFinishedEx_cleanup"><img border="0" alt="5" src="images/callouts/5.png"></a> <a href="#frontierFinishedEx_cleanup2"><img border="0" alt="12" src="images/callouts/12.png"></a> </td><td align="left" valign="top"><p>This method nulls out any state gathered during
+          processing.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="frontierFinishedEx_txt_disregard"></a><a href="#frontierFinishedEx_disregard"><img border="0" alt="6" src="images/callouts/6.png"></a> </td><td align="left" valign="top"><p>If the status is any of the one in this check, we treat it as
+          disregarded. That is, the URI could be crawled, but we don't want it
+          because it is outside some limit we have defined on the
+          crawl.</p></td></tr><tr><td align="left" valign="top" width="5%"><a name="frontierFinishedEx_txt_fail"></a><a href="#frontierFinishedEx_fail"><img border="0" alt="9" src="images/callouts/9.png"></a> </td><td align="left" valign="top"><p>If it isn't any of the previous states, then the crawling of
+          this URI is regarded as failed. We notify about it and then forget
+          it.</p></td></tr></table></div></p></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="uri.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="writefilter.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">7.&nbsp;Some notes on the URI classes&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;9.&nbsp;Writing a Filter</td></tr></table></div></body></html>

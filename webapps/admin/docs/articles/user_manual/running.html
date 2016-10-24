@@ -1,0 +1,183 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>7.&nbsp;Running a job</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix User Manual"><link rel="up" href="index.html" title="Heritrix User Manual"><link rel="prev" href="config.html" title="6.&nbsp;Configuring jobs and profiles"><link rel="next" href="analysis.html" title="8.&nbsp;Analysis of jobs"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">7.&nbsp;Running a job</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="config.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="analysis.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="running"></a>7.&nbsp;Running a job</h2></div></div></div><p>Once a crawl job has been created and properly configured it can be
+    run. To start a crawl the user must go to the web Console page (via the
+    Console tab).</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="console"></a>7.1.&nbsp;Web Console</h3></div></div></div><p>The web Console presents on overview of the current status of the
+      crawler.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N109D4"></a>7.1.1.&nbsp;Crawler Status Box</h4></div></div></div><p>The following information is always provided:</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>Crawler Status</strong></span></p><p>Is the crawler in <span class="emphasis"><em>Holding Jobs</em></span> or
+            <span class="emphasis"><em>Crawling Jobs</em></span> mode? If holding, no new jobs
+            pending or created will be started (but a job already begun will
+            continue). If crawling, the next pending or created job will be
+            started as soon as possible, for example when a previous job
+            finishes. For more detail see <a href="glossary.html#holdingvcrawling">"Holding Jobs" vs. "Crawling Jobs"</a>.</p><p>To the right of the current crawler status, a control link
+            reading either "Start" or "Hold" will toggle the crawler between
+            the two modes.</p></li><li><p><span class="bold"><strong>Jobs</strong></span></p><p>If a current job is in progress, its status and name will
+            appear. Alternatively, "None running" will appear to indicate no
+            job is in progress because the crawler is holding, or "None
+            available" if no job is in progress because no jobs have been
+            queued.</p><p>Below the current job info, the number of jobs pending and
+            completed is shown. The completed count includes those that failed
+            to start for some reason (see <a href="running.html#failedtostart" title="7.3.2.&nbsp;Job failed to start">Section&nbsp;7.3.2, &ldquo;Job failed to start&rdquo;</a> for
+            more on misconfigured jobs).</p></li><li><p><span class="bold"><strong>Alerts</strong></span></p><p>Total number of alerts, and within brackets new alerts, if
+            any.</p><p>See <a href="running.html#alerts">Section&nbsp;7.3.4, &ldquo;Alerts&rdquo;</a> for more on alerts.</p></li><li><p><span class="bold"><strong>Memory</strong></span></p><p>The amount of memory currently used, the size of the Java
+            heap, and the maximum size to which the heap can possibly grow are
+            all displayed, in kilobytes (KB).</p></li></ul></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10A0B"></a>7.1.2.&nbsp;Job Status Box</h4></div></div></div><p>If a job is in-progress -- running, paused, or between job
+        states -- the following information is also provided in a second area
+        underneath the <span class="emphasis"><em>Crawler Status Box</em></span>.</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>Job Status</strong></span></p><p>The current status of the job in progress. Jobs being
+            crawled are usually running or paused.</p><p>To the right of the current status, controls for
+            pausing/resuming or terminating the current job will appear as
+            appropriate.</p><p>When a job is terminated, its status will be marked as
+            'Ended by operator'. All currently active threads will be allowed
+            to finish behind the scenes even though the WUI will report the
+            job being terminated at once. If the crawler is in "Crawling Jobs"
+            mode, a next pending job, if any, will start immediately.</p><p>When a running job is paused, it may take some time for all
+            the active threads to enter a paused state. Until then the job is
+            considered to be still running and 'pausing'. It is possible to
+            resume from this interim state.</p><p>Once paused a job is considered to be suspended and time
+            spent in that state does not count towards elapsed job time or
+            rates.</p></li><li><p><span class="bold"><strong>Rates</strong></span></p><p>The number of URIs successfully processed per second is
+            shown, both the rate in the latest sampling interval and (in
+            parentheses) the average rate since the crawl began. The sampling
+            interval is typically about 20 seconds, and is adjustable via the
+            "interval-seconds" setting. The latest rate of progress can
+            fluctuate considerably, as the crawler workload varies and
+            housekeeping memory and file operations occur -- especially if the
+            sampling interval has been set to a low value.</p><p>Also show is the rate of successful content collection, in
+            KB/sec, for the latest sampling interval and (in parentheses) the
+            average since the crawl began. (See <a href="glossary.html#bytes">Bytes, KB and statistics</a>.)</p></li><li><p><span class="bold"><strong>Time</strong></span></p><p>The amount of time that has elapsed since the crawl began
+            (excluding any time spent paused) is displayed, as well as a very
+            crude estimate of the require time remaining. (This estimate does
+            not yet consider the typical certainty of discovering more URIs to
+            crawl, and ignored other factors, so should not be relied upon
+            until it can be improved in future releases.)</p></li><li><p><span class="bold"><strong>Load</strong></span></p><p>A number of measures are shown of how busy or loaded the job
+            has made the crawler. The number of active threads, compared to
+            the total available, is shown. Typically, if only a small number
+            of threads are active, it is because activating more threads would
+            exceed the configured politeness settings, given the remaining URI
+            workload. (For example, if all remaining URIs are on a single
+            host, no more than one thread will be active -- and often none
+            will be, as polite delays are observed between requests.)</p><p>The <span class="emphasis"><em>congestion ratio</em></span> is a rough
+            estimate of how much additional capacity, as a multiple of current
+            capacity, would be necessary to crawl the current workload at the
+            maximum rate allowable by politeness settings. (It is calculated
+            by comparing the number of internal queues that are progressing
+            with those that are waiting for a thread to become
+            available.)</p><p>The <span class="emphasis"><em>deepest queue</em></span> number indicates the
+            longest chain of pending URIs that must be processed sequentially,
+            which is a better indicator of the work remaining than the total
+            number of URIs pending. (A thousand URIs in a thousand independent
+            queues can complete in parallel very quickly; a thousand in one
+            queue will take longer.)</p><p>The <span class="emphasis"><em>average depth</em></span> number indicates the
+            average depth of the last URI in every active sequential
+            queue.</p></li><li><p><span class="bold"><strong>Totals</strong></span></p><p>A progress bar indicates the relative percentage of
+            completed URIs to those known and pending. As with the remaining
+            time estimate, no consideration is given to the liklihood of
+            discovering additional URIs to crawl. So, the percentage completed
+            can shrink as well as grow, especially in broader crawls.</p><p>To the left of the progress bar, the total number of URIs
+            successfully downloaded is shown; to the right, the total number
+            of URIs queued for future processing. Beneath the bar, the total
+            of downloaded plus queued is shown, as well as the uncompressed
+            total size of successfully downloaded data in kilobytes. See <a href="glossary.html#bytes">Bytes, KB and statistics</a>. (Compressed ARCs on disk will be somewhat
+            smaller than this figure.)</p></li><li><p><span class="bold"><strong>Paused Operations</strong></span></p><p>When the job is paused, additional options will appear such
+            as <span class="emphasis"><em>View or Edit Frontier URIs</em></span>.</p><p>The <span class="emphasis"><em>View or Edit Frontier URIs</em></span> option
+            takes the operator to a page allowing the lookup and deletion of
+            URIs in the frontier by using a regular expression, or addition of
+            URIs from an external file (even URIs that have already been
+            processed).</p></li></ul></div><p>Some of this information is replicated in the head of each page
+        (see <a href="running.html#header" title="7.3.3.&nbsp;All page status header">Section&nbsp;7.3.3, &ldquo;All page status header&rdquo;</a>).</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10A6C"></a>7.1.3.&nbsp;Console Bottom Operations</h4></div></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10A6F"></a>7.1.3.1.&nbsp;Refresh</h5></div></div></div><p>Update the status display. The status display does not update
+          itself and quickly becomes out of date as crawling proceeds. This
+          also refreshes the options available if they've changed as a result
+          of a change in the state of the job being crawled.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10A74"></a>7.1.3.2.&nbsp;Shut down Heritrix</h5></div></div></div><p>It is possible to shut down Heritrix through this option.
+          Doing so will terminate the Java process running Heritrix and the
+          only way to start it up again will be via the command line as this
+          also disables the WUI.</p><p>The user is asked to confirm this action twice to prevent
+          accidental shut downs.</p><p>This option will try to terminate any current job gracefully
+          but will only wait a very short time for active threads to
+          finish.</p></div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="pendingjobs"></a>7.2.&nbsp;Pending jobs</h3></div></div></div><p>At any given time there can be any number of crawl jobs waiting
+      for their turn to be crawled.</p><p>From the <span class="emphasis"><em>Jobs</em></span> tab the user can access a list
+      of these pending jobs (it also possible to get to them from the header,
+      see <a href="running.html#header" title="7.3.3.&nbsp;All page status header">Section&nbsp;7.3.3, &ldquo;All page status header&rdquo;</a>).</p><p>The list displays the name of each job, its status (currently all
+      pending jobs have the status 'Pending') and offers the following options
+      for each job:</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>View order</strong></span></p><p>Opens up the actual XML configuration file in a seperate
+          window. Of interest to advanced users only.</p></li><li><p><span class="bold"><strong>Edit configuration</strong></span></p><p>Takes the user to the Settings page of the jobs configurations
+          (see <a href="config.html#settings" title="6.3.&nbsp;Settings">Section&nbsp;6.3, &ldquo;Settings&rdquo;</a>).</p></li><li><p><span class="bold"><strong>Journal</strong></span></p><p>Takes the user to the job's Journal (see <a href="running.html#journal">Section&nbsp;7.4.1, &ldquo;Journal&rdquo;</a>).</p></li><li><p><span class="bold"><strong>Delete</strong></span></p><p>Deletes the job (will only be marked as deleted, does not
+          delete it from disk).</p></li></ul></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10AB0"></a>7.3.&nbsp;Monitoring a running job</h3></div></div></div><p>In addition to the logs and reports generally available on all
+      jobs (see <a href="analysis.html#logs" title="8.2.&nbsp;Logs">Section&nbsp;8.2, &ldquo;Logs&rdquo;</a> and <a href="analysis.html#reports" title="8.3.&nbsp;Reports">Section&nbsp;8.3, &ldquo;Reports&rdquo;</a>) some
+      information is provided only for jobs being crawled.<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>The Crawl Report (see <a href="analysis.html#crawlreport" title="8.3.1.&nbsp;Crawl report">Section&nbsp;8.3.1, &ldquo;Crawl report&rdquo;</a>) contains
+          one bit of information only available on active crawls. That is the
+          amount of time that has elapsed since a URI belonging to each host
+          was last finished.</p></div></p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10AC1"></a>7.3.1.&nbsp;Internal reports on ongoing crawl</h4></div></div></div><p>The following reports are only availible while the crawler is
+        running. They provide information about the internal status of certain
+        parts of the crawler. Generally this information is only of interest
+        to advanced users who possess detailed knowledge of the internal
+        workings of said modules.</p><p>These reports can be accessed from the Reports tab when a job is
+        being crawled.</p><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10AC8"></a>7.3.1.1.&nbsp;Frontier report</h5></div></div></div><p>A report on the internal state of the frontier.Can be unwieldy
+          in size or the amount of time/memory it takes to compose in large
+          crawls (with thousands of hosts with pending URIs).</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10ACD"></a>7.3.1.2.&nbsp;Thread report</h5></div></div></div><p>Contains information about what each toe thread is doing and
+          how long it has been doing it. Also allows users to terminate
+          threads that have become stuck. Terminated threads will not actually
+          be removed from memory, Java does not provide a way of doing that.
+          Instead they will be isolated from the rest of the program running
+          and the URI they are working on will be reported back to the
+          frontier as if it had failed to be processed.<div class="caution" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Caution</h3><p>Terminating threads should only be done by advanced users
+              who understand the effect of doing so.</p></div></p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="processorsreport"></a>7.3.1.3.&nbsp;Processors report</h5></div></div></div><p>A report on each processor. Not all processors provide
+          reports. Typically these are numbers of URIs handled, links
+          extracted etc.</p><p>This report is saved to a file at the end of the crawl (see
+          <a href="outside.html#processorsreport.txt" title="9.1.6.&nbsp;processors-report.txt">Section&nbsp;9.1.6, &ldquo;processors-report.txt&rdquo;</a>).</p></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="failedtostart"></a>7.3.2.&nbsp;Job failed to start</h4></div></div></div><p>If a job is misconfigured in such a way that it is not possible
+        to do any crawling it might seem as if it never started. In fact what
+        happens is that the crawl is started but on the initialization it is
+        immediately terminated and sent to the list of completed jobs (<a href="analysis.html#completedjobs" title="8.1.&nbsp;Completed jobs">Section&nbsp;8.1, &ldquo;Completed jobs&rdquo;</a>). In those instances an explanation of what
+        went wrong is displayed on the completed jobs page. An alert will also
+        be created.</p><p>A common cause of this is forgetting to set the HTTP header's
+        <code class="literal">user-agent</code> and <code class="literal">from</code> attributes
+        to valid values (see <a href="config.html#httpheaders" title="6.3.1.3.&nbsp;HTTP headers">Section&nbsp;6.3.1.3, &ldquo;HTTP headers&rdquo;</a>).</p><p>If no processors are set on the job (or the modules otherwise
+        badly misconfigured) the job may succeed in initializing but
+        immediately exhaust the seed list, failing to actually download
+        anything. This will not trigger any errors but a review of the logs
+        for the job should highlight the problem. So if a job terminates
+        immediately after starting without errors, the configuration
+        (especially modules) should be reviewed for errors.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="header"></a>7.3.3.&nbsp;All page status header</h4></div></div></div><p>At the top of every page in the WUI, right next to the Heritrix
+        logo, is a brief overview of the crawler's current status.</p><p>The three lines contain the following information (starting at
+        the top left and working across and down).</p><p>First bit of information is the current time when the page was
+        displayed. This is useful since the status of the crawler will
+        continue to change after a page loads, but those changes will not be
+        reflected on the page until it is reloaded (usually manually by the
+        user). As always this time is in GMT.</p><p>Right next to it is the number of current and new alerts.</p><p>The second line tells the user if the crawler is in "Crawling
+        Jobs" or "Holding Jobs" mode. (See <a href="glossary.html#holdingvcrawling">"Holding Jobs" vs. "Crawling Jobs"</a>). If a job is in progress, its status
+        and name will also be shown.</p><p>At the beginning of the final line the number of pending and
+        completed jobs are displayed. Clicking on either value takes the user
+        to the related overview page. Finally if a job is in progress, total
+        current URIs completed, elapsed time, and URIs/sec figures are
+        shown.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10B0B"></a>7.3.4.&nbsp;Alerts</h4></div></div></div><p>The number of existing and new alerts is displayed both in the
+        Console (<a href="running.html#console" title="7.1.&nbsp;Web Console">Section&nbsp;7.1, &ldquo;Web Console&rdquo;</a>) and the header of each page
+        (<a href="running.html#header" title="7.3.3.&nbsp;All page status header">Section&nbsp;7.3.3, &ldquo;All page status header&rdquo;</a>).</p><p>Clicking on the link made up of those numbers takes the user to
+        an overview of the alerts. The alerts are presented as messages, with
+        unread ones clearly marked in bold and offering the user the option of
+        reading them, marking as read and deleting them.</p><p>Clicking an alert brings up a screen with its details.</p><p>Alerts are generated in response to an error or problem of some
+        form. Alerts have severity levels that mirror the Java log
+        levels.</p><p>Serious exception that occur will have a
+        <span class="emphasis"><em>Severe</em></span> level. These may be indicative of bugs in
+        the code or problems with the configuration of a crawl job.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="editrun"></a>7.4.&nbsp;Editing a running job</h3></div></div></div><p>The configurations of a job can be edited while it is running.
+      This option is accessed from the <span class="emphasis"><em>Jobs</em></span> tab (Current
+      job/Edit configuration). When selected the user is taken to the settings
+      section of the job's configuration (see s<a href="config.html#settings" title="6.3.&nbsp;Settings">Section&nbsp;6.3, &ldquo;Settings&rdquo;</a>).</p><p>When a configuration file is edited, the old version of it is
+      saved to a new file (new file is named
+      <code class="filename">&lt;oldFilename&gt;_&lt;timestamp&gt;.xml</code>) before
+      it is updated. This way a record is kept of any changes. This record is
+      only kept for changes made <span class="emphasis"><em>after</em></span> crawling
+      begins.</p><p>It is not possible to edit all aspects of the configuration after
+      crawling starts. Most noticably the Modules section is disabled. Also,
+      although not enforced by the WUI, making changes to certain settings (in
+      particular filenames, directory locations etc.) will have no effect
+      (doing so will typically not harm the crawl, it will simply be
+      ignored).</p><p>However most settings can be changed. This includes the number of
+      threads being used and the seeds list and although it is not possible to
+      remove modules, most have the option to disable them. Settings a modules
+      <code class="literal">enabled</code> attribute to <code class="literal">false</code>
+      effectively removes them from the configuration.</p><p>If changing more than an existing atomic value -- for example,
+      adding a new filter -- it is good practice to pause the crawl first, as
+      some modifications to composite configuration entities may not occur in
+      a thread-safe manner with respect to ongoing crawling otherwise.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10B45"></a>7.4.1.&nbsp;Journal</h4></div></div></div><p>The user can add notes to a journal that is kept for each job.
+        No entries are made automatically in the journal, it is only for user
+        added comments.</p><p>It can be useful to use it to document reasons behind
+        configuration changes to preserve that information along with the
+        actual changes.</p><p>The journal can be accessed from the Pending jobs page (<a href="running.html#pendingjobs" title="7.2.&nbsp;Pending jobs">Section&nbsp;7.2, &ldquo;Pending jobs&rdquo;</a>) for pending jobs, the Jobs tab for currently
+        running jobs and the Completed jobs page (<a href="analysis.html#completedjobs" title="8.1.&nbsp;Completed jobs">Section&nbsp;8.1, &ldquo;Completed jobs&rdquo;</a>) for completed jobs.</p><p>The journal is written to a plain text file that is stored along
+        with the logs.</p></div></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="config.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="analysis.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">6.&nbsp;Configuring jobs and profiles&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;8.&nbsp;Analysis of jobs</td></tr></table></div></body></html>

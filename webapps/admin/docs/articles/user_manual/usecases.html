@@ -1,0 +1,86 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>A.&nbsp;Common Heritrix Use Cases</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix User Manual"><link rel="up" href="index.html" title="Heritrix User Manual"><link rel="prev" href="outside.html" title="9.&nbsp;Outside the user interface"><link rel="next" href="glossary.html" title="Glossary"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">A.&nbsp;Common Heritrix Use Cases</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="outside.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="glossary.html">Next</a></td></tr></table><hr></div><div class="appendix" lang="en" id="usecases"><div class="titlepage"><div><div><h2 class="title"><a name="usecases"></a>A.&nbsp;Common Heritrix Use Cases</h2></div><div><div class="author"><h3 class="author"><span class="firstname">Frank</span> <span class="surname">McCown</span></h3><div class="affiliation"><span class="orgname">Old Dominion University<br></span></div></div></div></div></div><p>There are many different ways you may perform a web crawl. Here we
+    have listed several use cases which will allow you to become familiar with
+    some of Heritrix's more frequently used crawling parameters.</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10F80"></a>A.1.&nbsp;Avoiding Too Much Dynamic Content</h3></div></div></div><p>Suppose you want to crawl only pages from a particular host
+      (<code class="literal">http://www.foo.org/</code>), and you want to avoid crawling
+      too many pages of the dynamically generated calendar. Let's say the
+      calendar is accessed by passing a year, month and day to the
+      <code class="literal">calendar</code> directory, as in
+      <code class="literal">http://www.foo.org/calendar?year=2006&amp;month=3&amp;day=12</code>.</p><p>When you first create the job for this crawl, you will specify a
+      single seed URI: <code class="literal">http://www.foo.org/</code>. By default,
+      your new crawl job will use the DecidingScope, which will contain a
+      default set of DecideRules. One of the default rules is the
+      SurtPrefixedDecideRule, which tells Heritrix to accept any URIs that
+      match our seed URI's SURT prefix,
+      <code class="literal">http://(org,foo,www,)/</code>. Subsequently, if the URI
+      <code class="literal">http://foo.org/</code> is encountered, it will be rejected
+      since its SURT prefix <code class="literal">http://(org,foo,)</code> does not
+      match the seed's SURT prefix. To allow both <code class="literal">foo.org</code>
+      and <code class="literal">www.foo.org</code>, you could use the two seeds
+      <code class="literal">http://foo.org/</code> and
+      <code class="literal">http://www.foo.org/</code>. To allow every subdomain of
+      <code class="literal">foo.org</code>, you could use the seed
+      <code class="literal">http://foo.org</code> (note the absence of a trailing
+      slash).</p><p>You will need to delete the TransclusionDecideRule since this rule
+      has the potential to lead Heritrix onto another host. For example, if a
+      URI returned a 301 (moved permanently) or 302 (found) response code and
+      a URI with a different host name, Heritrix would accept this URI using
+      the TransclusionDecideRule. Removing this rule will keep Heritrix from
+      straying off of our <code class="literal">www.foo.org</code> host.</p><p>A few of the rules like PathologicalPathDecideRule and
+      TooManyPathSegmentsDecideRule will allow Heritrix to avoid some types of
+      crawler traps. The TooManyHopsDecideRule will keep Heritrix from
+      following too many links away from the seed so the calendar doesn't trap
+      Heritrix in an infinite loop. By default, the hop path is set to 15, but
+      you can change that on the Settings screen.</p><p>Alternatively, you may add the MatchesFilePatternDecideRule. Set
+      <code class="literal">use-preset-pattern</code> to <code class="literal">CUSTOM</code> and
+      set <code class="literal">regexp</code> to something like:</p><code class="computeroutput">.*foo\.org(?!/calendar).*|.*foo\.org/calendar\?year=200[56].*</code><p>Finally, you'll need to set the <code class="literal">user-agent</code> and
+      <code class="literal">from</code> fields on the Settings screen, and then you may
+      submit the job and monitor the crawl.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10FDE"></a>A.2.&nbsp;Only Store Successful HTML Pages</h3></div></div></div><p>Suppose you wanted to only grab the first 50 pages encountered
+      from a set of seeds and archive only those pages that return a 200
+      response code and have the <code class="literal">text/html</code> MIME type.
+      Additionally, you only want to look for links in HTML resources.</p><p>When you create your job, use the DecidingScope with the default
+      set of DecideRules.</p><p>In order to examine HTML documents only for links, you will need
+      to remove the following extractors that tell Heritrix to look for links
+      in style sheets, JavaScript, and Flash files:</p><div class="orderedlist"><ol type="1"><li>ExtractorCSS</li><li>ExtractorJS</li><li>ExtractorSWF</li></ol></div><p>You should leave in the ExtractorHTTP since it is useful in
+      locating resources that can only be found using a redirect (301 or
+      302).</p><p>You can limit the number of files to download by setting
+      max-document-download on the Settings screen. Setting this value to 50
+      will probably not have the results you intend. Since each DNS response
+      and robots.txt file is counted in this number, you'll likely want to use
+      the value of 50 * number of seeds * 2.</p><p>Next, you will need to add filters to the ARCWriterProcessor so
+      that it only records documents with a 200 status code and a mime-type of
+      text/html. The first filter to add is the ContentTypeRegExpFilter; set
+      its <code class="literal">regexp</code> setting to <code class="literal">text/html.*</code>.
+      Next, add a DecidingFilter to the ARCWriterProcessor, then add
+      FetchStatusDecideRule to the DecidingFilter.</p><p>You'll probably want to apply the above filters to the
+      <code class="literal">mid-fetch-filters</code> setting of FetchHTTP as well. That
+      will prevent FetchHTTP from downloading the content of any non-html or
+      non-successful documents.</p><p>Once you have entered the desired settings, start the job and
+      monitor the crawl.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1100A"></a>A.3.&nbsp;Mirroring .html Files Only</h3></div></div></div><p>Suppose you only want to crawl URLs that match
+      <code class="literal">http://foo.org/bar/*.html</code>, and you'd like to save the
+      crawled files in a file/directory format instead of saving them in ARC
+      files. Suppose you also know that you are crawling a web server that is
+      case sensitive (<code class="literal">http://foo.org/bar/abc.html</code> and
+      <code class="literal">http://foo.org/bar/ABC.HTML</code> are pointing to two
+      different resources).</p><p>You would first need to create a job with the single seed
+      http://foo.org/bar/. You'll need to add the MirrorWriterProcessor on the
+      Modules screen and delete the ARCWriterProcessor. This will store your
+      files in a directory structure that matches the crawled URIs, and the
+      files will be stored in the crawl job's <code class="filename">mirror</code>
+      directory.</p><p>Your job should use the DecidingScope with the following set of
+      DecideRules:</p><div class="orderedlist"><ol type="1"><li>RejectDecideRule</li><li>SurtPrefixedDecideRule</li><li>TooManyHopsDecideRule</li><li>PathologicalPathDecideRule</li><li>TooManyPathSegmentsDecideRule</li><li>NotMatchesFilePatternDecideRule</li><li>PrerequisiteAcceptDecideRule</li></ol></div><p>We are using the NotMatchesFilePatternDecideRule so we can
+      eliminate crawling any URIs that don't end with
+      <code class="literal">.html</code>. It's important that this DecideRule be placed
+      immediately before PrerequisiteAcceptDecideRule; otherwise the DNS and
+      robots.txt prerequisites will be rejected since they won't match the
+      regexp.</p><p>On the Setting screen, you'll want to set the following for the
+      NotMatchesFilePatternDecideRule:</p><div class="orderedlist"><ol type="1"><li>decision: REJECT</li><li>use-preset-pattern: CUSTOM</li><li>regexp: .*(/|\.html)$</li></ol></div><p>Note that the regexp will accept URIs that end with / as well as
+      .html. If we don't accept the /, the seed URI will be rejected. This
+      also allows us to accept URIs like http://foo.org/bar/dir/ which are
+      likely pointing to index.html. A stricter regexp would be .*\.html$, but
+      you'll need to change your seed URI if you use it. One thing to be aware
+      of: if Heritrix encounters the URI http://foo.org/bar/dir where dir is a
+      directory, the URI will be rejected since it is missing the terminating
+      slash.</p><p>Finally you'll need to allow Heritrix to differentiate between
+      abc.html and ABC.HTML. Do this by removing the LowercaseRule under
+      uri-canonicalization-rules on the Submodules screen.</p><p>Once you have entered the desired settings, start the job and
+      monitor the crawl.</p></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="outside.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="glossary.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">9.&nbsp;Outside the user interface&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;Glossary</td></tr></table></div></body></html>

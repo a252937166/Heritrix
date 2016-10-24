@@ -1,0 +1,27 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>B.&nbsp;Version and Release Numbering</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix developer documentation"><link rel="up" href="index.html" title="Heritrix developer documentation"><link rel="prev" href="refactor_frontier_dispositions.html" title="2.&nbsp;The Frontiers handling of dispositions"><link rel="next" href="release.html" title="C.&nbsp;Making a Heritrix Release"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">B.&nbsp;Version and Release Numbering</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="refactor_frontier_dispositions.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="release.html">Next</a></td></tr></table><hr></div><div class="appendix" lang="en" id="release_numbering"><div class="titlepage"><div><div><h2 class="title"><a name="release_numbering"></a>B.&nbsp;Version and Release Numbering</h2></div></div></div><p>Heritrix uses a version numbering scheme modeled after the one used
+    for Linux kernels. Versions are 3 numbers:</p><p>[major ] .[minor/mode ] .[patchlevel ]</p><p>The major version number, currently at one, increments upon
+    significant architectural changes or the achievement of important
+    milestones in capabilities. The minor/mode version number increments as
+    progress is made within a major version, with the added constraint that
+    all external releases have an even minor/mode version number, and all
+    internal/development versions have an odd minor/mode version
+    number.</p><p>The patchlevel number increments for small sets of changes,
+    providing the most fine-grain time line of software evolution. Patchlevels
+    increment regularly for internal/development (odd minor level) work, but
+    only increment for external releases when an official update to the
+    previous release version has been tested and packaged.</p><p>Version numbers are applied as tags of the form
+    "heritrix-#_#_#".  Branches occur at major transitions and are labeled
+    with the form "heritrix_#_#'.</p><p>When a particular development-version is thought
+    appropriate to become an external/"st able" release, it is considered a
+    "Release Candidate" (No where is this written in versions). If testing
+    confirms it is suitable for release, it is
+    assigned the next even minor/mode value (and a zero patchlevel), 
+    version-labelled, and packaged for release. Immediately after release, and
+    before additional coding occurs, the HEAD is assigned the next odd
+    minor/mode value (and a zero patchlevel) in project/source files.</p><p>If patches are required to a released version, before the next
+    release is ready, they are applied to a branch from the release
+    version tag, tested, and released as the subsequent patchlevel.</p><p>Keep in mind that each version number is an integer, not merely a
+    decimal digit. To use an extreme example: development version 2.99.99
+    would be followed by either the 2.99.100 development version patchlevel or
+    the 2.100.0 release. (And after such a release, the next development
+    version would be 2.101.0.)</p></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="refactor_frontier_dispositions.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="release.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">2.&nbsp;The Frontiers handling of dispositions&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;C.&nbsp;Making a Heritrix Release</td></tr></table></div></body></html>

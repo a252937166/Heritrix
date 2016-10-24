@@ -1,0 +1,107 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>11.&nbsp;Release 1.8.0 - 2006-05-05</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix Release Notes"><link rel="up" href="index.html" title="Heritrix Release Notes"><link rel="prev" href="1_10_0.html" title="10.&nbsp;Release 1.10.0 - 2006-09-11"><link rel="next" href="1_6_0.html" title="12.&nbsp;Release 1.6.0 - 2005-12-01"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">11.&nbsp;Release 1.8.0 - 2006-05-05</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="1_10_0.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="1_6_0.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="1_8_0"></a>11.&nbsp;Release 1.8.0 - 2006-05-05</h2></div></div></div><div class="abstract"><p class="title"><b>Abstract</b></p><p>Release 1.8.0 adds a number of minor improvements and fixes. Most
+      notably, checkpointing can now be achieved with a single command (with
+      the requisite pause/resume done automatically), and all URIs fetched may
+      be tagged with the original seed URI from which they were discovered.
+      (This source URI information is both in the crawl.log and a new
+      'source-report.txt' report available among the disk file
+      reports.)</p><p>We expect release 1.8.0 to be the last release officially
+      supported on JDK 1.4.x ("Java 2") Java; future releases will require JDK
+      1.5.x ("Java 5") Java facilities.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="1_8_0_limitations"></a>11.1.&nbsp;Known Limitations/Issues</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="bdb_nfs"></a>11.1.1.&nbsp;java.io.IOException: No locks available</h4></div></div></div><p>BDB-JE will complain 'No locks available' when crawler is being
+        built/run on an NFS mount. Workaround is to locate the 'state'
+        directory on a non-NFS-mounted volume.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="bdb_jdk16"></a>11.1.2.&nbsp;"Channel closed, may be due to thread interrupt"</h4></div></div></div><p>An error with this message has been observed intermittently when
+        running on the Sun Java 6 ("mustang") beta JVM ("-beta2-b81"). A
+        forthcoming fix from Sleepycat for BDB-JE may be necessary to resolve
+        this issue.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="1_8_0_changes"></a>11.2.&nbsp;Changes</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="progressstats"></a>11.2.1.&nbsp;Progress Statistics Log</h4></div></div></div><p>The format of progress statistics' state-change log messages
+        have been modified. State-change messages now have a tail that adds
+        some context explaining why we're pausing, etc. Note, we will be
+        adding originator of the status-change event to the progress
+        statistics log post 1.8.0 -- i.e. whether event came of JMX or via the
+        UI -- so be prepared for more progress log changes.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="checkpointing"></a>11.2.2.&nbsp;Checkpoints</h4></div></div></div><p>Now when you ask to checkpoint a running crawl, it will manage
+        for you the pause, checkpoint, and resume cycle (If paused when
+        checkpoint is invoked, the crawler will be set back into a paused
+        state upon checkpoint completion).</p><p>Checkpoints made with 1.6.0 software cannot be recovered with
+        1.8.0 software. Core classes such as CrawlController have changed so
+        their serialized representation as part of a checkpoint has also
+        changed (We have not done the work to deserialize earlier versions of
+        core classes serialized as part of a checkpoint).</p></div><p>
+        <div class="table"><a name="N10849"></a><p class="title"><b>Table&nbsp;4.&nbsp;All Tracked Changes</b></p><table summary="All Tracked Changes" border="1"><colgroup><col><col><col><col><col><col></colgroup><thead><tr><th>ID</th><th>Type</th><th>Summary</th><th>Open Date</th><th>By</th><th>Filer</th></tr></thead><tbody><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1440656&group_id=73833&atid=539099" target="_top">1440656</a>
+                </td><td>Fix</td><td>upping total budget doesn't update/unretire
+                queues</td><td>2006-02-28</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1482761&group_id=73833&atid=539099" target="_top">1482761</a>
+                </td><td>Fix</td><td>BDB Adler32 gc-lock OOME risk</td><td>2006-05-05</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1371195&group_id=73833&atid=539099" target="_top">1371195</a>
+                </td><td>Fix</td><td>[jmx] Make downloaded data count have constant
+                units</td><td>2005-12-01</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1371326&group_id=73833&atid=539099" target="_top">1371326</a>
+                </td><td>Fix</td><td>refactor/compact QuotaEnforcer code</td><td>2005-12-01</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1379208&group_id=73833&atid=539099" target="_top">1379208</a>
+                </td><td>Fix</td><td>crawl report/hosts-report stats leave out
+                robots.txt</td><td>2005-12-12</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1415940&group_id=73833&atid=539099" target="_top">1415940</a>
+                </td><td>Fix</td><td>Failed deregistration of container with jndi</td><td>2006-01-26</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1415942&group_id=73833&atid=539099" target="_top">1415942</a>
+                </td><td>Fix</td><td>When multiple instances, there's always a runt in the
+                litter</td><td>2006-01-26</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1417062&group_id=73833&atid=539099" target="_top">1417062</a>
+                </td><td>Fix</td><td>JMX get alert by index broken.</td><td>2006-01-27</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1419272&group_id=73833&atid=539099" target="_top">1419272</a>
+                </td><td>Fix</td><td>Corrupt job.state files obstruct crawl
+                resumption</td><td>2006-01-30</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1442207&group_id=73833&atid=539099" target="_top">1442207</a>
+                </td><td>Fix</td><td>stop alerts 'line in seed file ignored' for mixed
+                seed/surt</td><td>2006-03-02</td><td>gojomo</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1462407&group_id=73833&atid=539099" target="_top">1462407</a>
+                </td><td>Fix</td><td>IllegalArgumentException adding to source host
+                report</td><td>2006-03-31</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1465369&group_id=73833&atid=539099" target="_top">1465369</a>
+                </td><td>Fix</td><td>make_reports.pl outdated, broken</td><td>2006-04-05</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1475730&group_id=73833&atid=539099" target="_top">1475730</a>
+                </td><td>Fix</td><td>OnHostsDecideRule/OnDomainsDecideRule not adding seed
+                SURTs</td><td>2006-04-24</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1475638&group_id=73833&atid=539099" target="_top">1475638</a>
+                </td><td>Fix</td><td>Robots.txt ignored if 206/203 Status Code</td><td>2006-04-24</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1395637&group_id=73833&atid=539099" target="_top">1395637</a>
+                </td><td>Fix</td><td>crawl.log entires do not reflect 'no space left'
+                error</td><td>2006-01-02</td><td>karl-ia</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1400646&group_id=73833&atid=539099" target="_top">1400646</a>
+                </td><td>Fix</td><td>ExtractorHTML/ExtractorJS 'hang' on many-backslash
+                input</td><td>2006-01-09</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1404316&group_id=73833&atid=539099" target="_top">1404316</a>
+                </td><td>Fix</td><td>ExtractorCSS does not resolve relative URIs against
+                BASE</td><td>2006-01-12</td><td>karl-ia</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1392104&group_id=73833&atid=539099" target="_top">1392104</a>
+                </td><td>Fix</td><td>ExtractorJS NPE doing speculative extraction</td><td>2005-12-28</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1387423&group_id=73833&atid=539102" target="_top">1387423</a>
+                </td><td>Add</td><td>[arcreader] Fetch records and iterate remote
+                ARCs</td><td>2005-12-21</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1371178&group_id=73833&atid=539102" target="_top">1371178</a>
+                </td><td>Add</td><td>[jmx] Add name of heritrix 'host' as att</td><td>2005-12-01</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1233079&group_id=73833&atid=539102" target="_top">1233079</a>
+                </td><td>Add</td><td>replace util.concurrent with
+                java.util.concurrent</td><td>2005-07-05</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1371202&group_id=73833&atid=539102" target="_top">1371202</a>
+                </td><td>Add</td><td>[jmx] Regularize crawl end state messages</td><td>2005-12-01</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1365804&group_id=73833&atid=539102" target="_top">1365804</a>
+                </td><td>Add</td><td>JmxUtils.getOpenType() must handle Doubles</td><td>2005-11-24</td><td>stack-sf</td><td>nobody</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1374947&group_id=73833&atid=539102" target="_top">1374947</a>
+                </td><td>Add</td><td>[jmx] progress statistics as notification</td><td>2005-12-06</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1388275&group_id=73833&atid=539102" target="_top">1388275</a>
+                </td><td>Add</td><td>[contrib] Preselector ATTR_ALLOW_BY_REGEXP</td><td>2005-12-22</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1393254&group_id=73833&atid=539102" target="_top">1393254</a>
+                </td><td>Add</td><td>'total' bytes/fetches quota options in
+                QuotaEnforcer</td><td>2005-12-29</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1119608&group_id=73833&atid=539102" target="_top">1119608</a>
+                </td><td>Add</td><td>Carry forward (&amp; log) 'originating URL/seed' for
+                all URLs</td><td>2005-02-09</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1358617&group_id=73833&atid=539102" target="_top">1358617</a>
+                </td><td>Add</td><td>Add destroy to JMX API</td><td>2005-11-16</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1445970&group_id=73833&atid=539102" target="_top">1445970</a>
+                </td><td>Add</td><td>New "seed source report" of # of URLs per host per
+                source</td><td>2006-03-08</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1436290&group_id=73833&atid=539102" target="_top">1436290</a>
+                </td><td>Add</td><td>improve surt docs; esp 'surts-source-file'
+                syntax</td><td>2006-02-21</td><td>nobody</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1302207&group_id=73833&atid=539102" target="_top">1302207</a>
+                </td><td>Add</td><td>unattended checkpointing</td><td>2005-09-23</td><td>karl-ia</td><td>gojomo</td></tr></tbody></table></div>
+      </p></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="1_10_0.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="1_6_0.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">10.&nbsp;Release 1.10.0 - 2006-09-11&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;12.&nbsp;Release 1.6.0 - 2005-12-01</td></tr></table></div></body></html>

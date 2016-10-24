@@ -1,0 +1,183 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.&nbsp;Installing and running Heritrix</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix User Manual"><link rel="up" href="index.html" title="Heritrix User Manual"><link rel="prev" href="intro.html" title="1.&nbsp;Introduction"><link rel="next" href="wui.html" title="3.&nbsp;Web based user interface"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">2.&nbsp;Installing and running Heritrix</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="intro.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="wui.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="install"></a>2.&nbsp;Installing and running Heritrix</h2></div></div></div><p>This chapter will explain how to set up Heritrix.</p><p>Because Heritrix is a pure Java program it can (in theory anyway) be
+    run on any platform that has a Java 5.0 VM. However we are only committed
+    to supporting its operation on Linux and so this chapter only covers setup
+    on that platform. Because of this, what follows assumes basic Linux
+    administration skills. Other chapters in the user manual are platform
+    agnostic.</p><p>This chapter also only covers installing and running the prepackaged
+    binary distributions of Heritrix. For information about downloading and
+    compiling the source see the <a href="http://crawler.archive.org/articles/developer_manual/index.html" target="_top">Developer's
+    Manual</a>.</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1003F"></a>2.1.&nbsp;Obtaining and installing Heritrix</h3></div></div></div><p>The packaged binary can be downloaded from the project's <a href="http://sourceforge.net/projects/archive-crawler" target="_top">sourceforge home
+      page</a>. Each release comes in four flavors, packaged as .tar.gz or
+      .zip and including source or not.</p><p>For installation on Linux get the file
+      <code class="filename">heritrix-?.?.?.tar.gz</code> (where ?.?.? is the most
+      recent version number).</p><p>The packaged binary comes largely ready to run. Once downloaded it
+      can be untarred into the desired directory.</p><p><pre class="programlisting">  % tar xfz heritrix-?.?.?.tar.gz</pre></p><p>Once you have downloaded and untarred the correct file you can
+      move on to the next step.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10056"></a>2.1.1.&nbsp;System requirements</h4></div></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10059"></a>2.1.1.1.&nbsp;Java Runtime Environment</h5></div></div></div><p>The Heritrix crawler is implemented purely in Java. This means
+          that the only true requirement for running it is that you have a JRE
+          installed (Building will require a JDK).</p><p>The Heritrix crawler, since release 1.10.0, makes use of Java
+          5.0 features so your JRE must be at least of a 5.0 (1.5.0+)
+          pedigree.</p><p>We currently include all of the free/open source third-party
+          libraries necessary to run Heritrix in the distribution package. See
+          <a href="http://crawler.archive.org/dependencies.html" target="_top">dependencies</a>
+          for the complete list (Licenses for all of the listed libraries are
+          listed in the dependencies section of the raw project.xml at the
+          root of the <code class="literal">src</code> download or on
+          Sourceforge).</p><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N1006A"></a>2.1.1.1.1.&nbsp;Installing Java</h6></div></div></div><p>If you do not have Java installed you can download Java
+            from:</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>Sun</strong></span> -- <a href="http://java.sun.com/" target="_top">java.sun.com</a></p></li><li><p><span class="bold"><strong>IBM</strong></span> -- <a href="http://www.ibm.com/java" target="_top">www.ibm.com/java</a></p></li></ul></div></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10082"></a>2.1.1.2.&nbsp;Hardware</h5></div></div></div><p>A default java heap is 256MB RAM, which is usually suitable
+          for crawls that range over hundreds of hosts. Assign more -- see
+          <a href="install.html#java_opts" title="2.2.1.3.&nbsp;JAVA_OPTS">Section&nbsp;2.2.1.3, &ldquo;JAVA_OPTS&rdquo;</a> for how -- of your available RAM to the
+          heap if you are crawling thousands of hosts or experience Java
+          out-of-memory problems.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1008A"></a>2.1.1.3.&nbsp;Linux</h5></div></div></div><p>The Heritrix crawler has been built and tested primarily on
+          Linux. It has seen some informal use on Macintosh, Windows 2000 and
+          Windows XP, but is not tested, packaged, nor supported on platforms
+          other than Linux at this time.</p></div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1008F"></a>2.2.&nbsp;Running Heritrix</h3></div></div></div><p>To run Heritrix, first do the following: <pre class="programlisting">  % export HERITRIX_HOME=/PATH/TO/BUILT/HERITRIX</pre>...where
+      <code class="literal">$HERITRIX_HOME</code> is the location of your untarred
+      <code class="filename">heritrix.?.?.?.tar.gz</code>.</p><p>Next run:<pre class="programlisting">  % cd $HERITRIX_HOME
+  % chmod u+x $HERITRIX_HOME/bin/heritrix
+  % $HERITRIX_HOME/bin/heritrix --help</pre>This should give you
+      usage output like the following:</p><p><pre class="programlisting"><code class="computeroutput">  Usage: heritrix --help
+  Usage: heritrix --nowui ORDER.XML
+  Usage: heritrix [--port=#] [--run] [--bind=IP,IP...] --admin=LOGIN:PASSWORD \
+      [ORDER.XML]
+  Usage: heritrix [--port=#] --selftest[=TESTNAME]
+  Version: @VERSION@
+  Options:
+   -b,--bind       Comma-separated list of IP addresses or hostnames for web
+                   server to listen on.  Set to / to listen on all available
+                   network interfaces.  Default is 127.0.0.1.
+   -a,--admin      Login and password for web user interface administration.
+                   Required (unless passed via the 'heritrix.cmdline.admin'
+                   system property).  Pass value of the form 'LOGIN:PASSWORD'.
+   -h,--help       Prints this message and exits.
+   -n,--nowui      Put heritrix into run mode and begin crawl using ORDER.XML. Do
+                   not put up web user interface.
+   -p,--port       Port to run web user interface on.  Default: 8080.
+   -r,--run        Put heritrix into run mode. If ORDER.XML begin crawl.
+   -s,--selftest   Run the integrated selftests. Pass test name to test it only
+                   (Case sensitive: E.g. pass 'Charset' to run charset selftest).
+  Arguments:
+   ORDER.XML       Crawl order to run.</code></pre>Launch
+      the crawler with the UI enabled by doing the following:</p><p><pre class="programlisting">  % $HERITRIX_HOME/bin/heritrix --admin=LOGIN:PASSWORD</pre>This
+      will start up Heritrix printing out a startup message that looks like
+      the following:</p><p><pre class="programlisting">  [b116-dyn-60 619] heritrix-0.4.0 &gt; ./bin/heritrix
+  Tue Feb 10 17:03:01 PST 2004 Starting heritrix...
+  Tue Feb 10 17:03:05 PST 2004 Heritrix 0.4.0 is running.
+  Web UI is at: http://b116-dyn-60.archive.org:8080/admin
+  Login and password: admin/letmein</pre> <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>By default, as of version 1.10.x, Heritrix binds to localhost
+          only. This means that you need to be running Heritrix on the same
+          machine as your browser to access the Heritrix UI. Read about the
+          <code class="literal">--bind</code> argument above if you need to access the
+          Heritrix UI over a network.</p></div></p><p>See <a href="wui.html" title="3.&nbsp;Web based user interface">Section&nbsp;3, &ldquo;Web based user interface&rdquo;</a> and <a href="tutorial.html" title="4.&nbsp;A quick guide to running your first crawl job">Section&nbsp;4, &ldquo;A quick guide to running your first crawl job&rdquo;</a> to get
+      your first crawl up and running.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N100C6"></a>2.2.1.&nbsp;Environment variables</h4></div></div></div><p>Below are environment variables that effect Heritrix
+        operation.</p><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N100CB"></a>2.2.1.1.&nbsp;HERITRIX_HOME</h5></div></div></div><p>Set this environment variable to point at the Heritrix home
+          directory. For example, if you've unpacked Heritrix in your home
+          directory and Heritrix is sitting in the heritrix-1.0.0 directory,
+          you'd set HERITRIX_HOME as follows. Assuming your shell is
+          bash:<pre class="programlisting">  % export HERITRIX_HOME=~/heritrix-1.0.0</pre>If
+          you don't set this environment variable, the Heritrix start script
+          makes a guess at the home for Heritrix. It doesn't always guess
+          correctly.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N100D4"></a>2.2.1.2.&nbsp;JAVA_HOME</h5></div></div></div><p>This environment variable may already exist. It should point
+          to the Java installation on the machine. An example of how this
+          might be set (assuming your shell is bash):</p><p><pre class="programlisting">  % export JAVA_HOME=/usr/local/java/jre/</pre></p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="java_opts"></a>2.2.1.3.&nbsp;JAVA_OPTS</h5></div></div></div><p>Pass options to the Heritrix JVM by populating the JAVA_OPTS
+          environment variable with values. For example, if you want to have
+          Heritrix run with a larger heap, say 512 megs, you could do either
+          of the following (assuming your shell is bash):<pre class="programlisting">  % export JAVA_OPTS="-Xmx512M"
+% $HERITRIX_HOME/bin/heritrix</pre>Or, you could do it all on the
+          one line as follows:<pre class="programlisting">  % JAVA_OPTS="-Xmx512m" $HERITRIX_HOME/bin/heritrix</pre></p></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N100EA"></a>2.2.2.&nbsp;System properties</h4></div></div></div><p>Below we document the system properties passed on the
+        command-line that can influence Heritrix's behavior. If you are using
+        the /bin/heritrix script to launch Heritrix you may have to edit it to
+        change/set these properties or else pass them as part of
+        JAVA_OPTS.</p><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="heritrix.properties"></a>2.2.2.1.&nbsp;heritrix.properties</h5></div></div></div><p>Set this property to point at an alternate heritrix.properties
+          file -- <code class="literal">e.g.:
+          -Dheritrix.properties=/tmp/alternate.properties</code> -- when
+          you want heritrix to use a properties file other than that found at
+          <code class="literal">conf/heritrix.properties</code>.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N100FD"></a>2.2.2.2.&nbsp;heritrix.context</h5></div></div></div><p>Provide an alternate context for the Heritrix admin UI.
+          Usually the admin webapp is mounted on root: i.e. '/'.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10102"></a>2.2.2.3.&nbsp;heritrix.development</h5></div></div></div><p>Set this property when you want to run the crawler from
+          eclipse. This property takes no arguments. When this property is
+          set, the <code class="literal">conf</code> and <code class="literal">webapps</code>
+          directories will be found in their development locations and startup
+          messages will show on the text console (standard out).</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1010F"></a>2.2.2.4.&nbsp;heritrix.home</h5></div></div></div><p>Where heritrix is homed usually passed by the heritrix launch
+          script.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10114"></a>2.2.2.5.&nbsp;heritrix.out</h5></div></div></div><p>Where stdout/stderr are sent, usually heritrix_out.log and
+          passed by the heritrix launch script.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10119"></a>2.2.2.6.&nbsp;heritrix.version</h5></div></div></div><p>Version of heritrix set by the heritrix build into
+          heritrix.properties.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1011E"></a>2.2.2.7.&nbsp;heritrix.jobsdir</h5></div></div></div><p>Where to drop heritrix jobs. Usually empty. Default location
+          is <code class="literal">${HERITRIX_HOME}/jobs</code>.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="hconf"></a>2.2.2.8.&nbsp;heritrix.conf</h5></div></div></div><p>Specify an alternate configuration directory other than the
+          default <code class="literal">$HERITRIX_HOME/conf</code>.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10131"></a>2.2.2.9.&nbsp;heritrix.cmdline</h5></div></div></div><p>This set of system properties are rarely used. They are for
+          use when Heritrix has NOT been started from the command-line -- e.g.
+          its been embedded in another application -- and the startup
+          configuration that is set usually by command-line options, instead
+          needs to be done via system properties alone.</p><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N10136"></a>2.2.2.9.1.&nbsp;heritrix.cmdline.admin</h6></div></div></div><p>Value is a colon-delimited String user name and password for
+            admin GUI</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N1013B"></a>2.2.2.9.2.&nbsp;heritrix.cmdline.nowui</h6></div></div></div><p>If set to true, will prevent embedded web server crawler
+            control interface from starting up.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N10140"></a>2.2.2.9.3.&nbsp;heritrix.cmdline.order</h6></div></div></div><p>If set to to a string file path, will use the specified
+            crawl order XML file.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N10145"></a>2.2.2.9.4.&nbsp;heritrix.cmdline.port</h6></div></div></div><p>Value is the port to run the GUI on.</p></div><div class="sect5" lang="en"><div class="titlepage"><div><div><h6 class="title"><a name="N1014A"></a>2.2.2.9.5.&nbsp;heritrix.cmdline.run</h6></div></div></div><p>If true, crawler is set into run mode on startup.</p></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N1014F"></a>2.2.2.10.&nbsp;javax.net.ssl.trustStore</h5></div></div></div><p>Heritrix has its own trust store at
+          <code class="literal">conf/heritrix.cacerts</code> that it uses if the
+          <code class="literal">FetcherHTTP</code> is configured to use a trust level of
+          other than <span class="emphasis"><em>open</em></span> (open is the default setting).
+          In the unusual case where you'd like to have Heritrix use an
+          alternate truststore, point at the alternate by supplying the JSSE
+          <code class="literal">javax.net.ssl.trustStore</code> property on the command
+          line: e.g.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10163"></a>2.2.2.11.&nbsp;java.util.logging.config.file</h5></div></div></div><p>The Heritrix <code class="filename"><code class="literal">conf</code></code>
+          directory includes a file named
+          <code class="filename">heritrix.properties</code>. A section of this file
+          specifies the default Heritrix logging configuration. To override
+          these settings, point
+          <code class="literal">java.util.logging.config.file</code> at a properties
+          file with an alternate logging configuration. Below we reproduce the
+          default <code class="filename">heritrix.properties</code> for
+          reference:<pre class="programlisting">  # Basic logging setup; to console, all levels
+handlers= java.util.logging.ConsoleHandler
+java.util.logging.ConsoleHandler.level= ALL
+
+# Default global logging level: only warnings or higher
+.level= WARNING
+
+# currently necessary (?) for standard logs to work
+crawl.level= INFO
+runtime-errors.level= INFO
+uri-errors.level= INFO
+progress-statistics.level= INFO
+recover.level= INFO
+
+# HttpClient is too chatty... only want to hear about severe problems
+org.apache.commons.httpclient.level= SEVERE</pre>Here's an example
+          of how you might specify an override:<pre class="programlisting">  % JAVA_OPTS="-Djava.util.logging.config.file=heritrix.properties" \
+      ./bin/heritrix --no-wui order.xml</pre></p><p>Alternatively you could edit the default file.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10183"></a>2.2.2.12.&nbsp;java.io.tmpdir</h5></div></div></div><p>Specify an alternate tmp directory. Default is /tmp.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="N10188"></a>2.2.2.13.&nbsp;com.sun.management.jmxremote.port</h5></div></div></div><p>What port to start up JMX Agent on. Default is 8849. See also
+          the environment variable JMX_PORT.</p></div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="security"></a>2.3.&nbsp;Security Considerations</h3></div></div></div><p>The crawler is a large and active network application which
+      presents security implications, both local to the machine where it
+      operates, and remotely for machines it contacts.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10193"></a>2.3.1.&nbsp;Local to the Crawling Machine</h4></div></div></div><p>It is important to recognize that the web UI (discussed in <a href="wui.html" title="3.&nbsp;Web based user interface">Section&nbsp;3, &ldquo;Web based user interface&rdquo;</a>) and JMX agent (discussed in <a href="outside.html#mon_com" title="9.5.&nbsp;Remote Monitoring and Control">Section&nbsp;9.5, &ldquo;Remote Monitoring and Control&rdquo;</a>) allow remote control of the crawler process in
+        ways that might potentially disrupt a crawl, change the crawler's
+        behavior, read or write locally-accessible files, and perform or
+        trigger other actions in the Java VM or local machine.</p><p>The administrative login and password are currently only a very
+        mild protection against unauthorized access, unless you take
+        additional steps to prevent access to the crawler machine. We strongly
+        recommend some combination of the following practices:</p><p><span class="bold"><strong>First,</strong></span> use network
+        configuration tools, like a firewall, to only allow trusted remote
+        hosts to contact the web UI and, if applicable, JMX agent ports. (The
+        default web UI port is 8080; JMX is 8849.)</p><p><span class="bold"><strong>Second,</strong></span> use a strong and unique
+        username/password combination to secure the web UI and JMX agent.
+        However, keep in mind that the default administrative web server uses
+        plain HTTP for access, so these values are susceptible to
+        eavesdropping in transit if network links between your browser and the
+        crawler are compromised. (An upcoming update will change the default
+        to HTTPS.) Also, setting the username/password on the command-line may
+        result in their values being visible to other users of the crawling
+        machine, and they are additionally printed to the console and
+        heritrix_out.log for operator reference.</p><p><span class="bold"><strong>Third,</strong></span> run the crawler as a
+        user with the minimum privileges necessary for its operation, so that
+        in the event of unauthorized access to the web UI or JMX agent, the
+        potential damage is limited.</p><p>Successful unauthorized access to the web UI or JMX agent could
+        trivially end or corrupt a crawl, or change the crawler's behavior to
+        be a nuisance to other network hosts. By adjusting configuration
+        paths, unauthorized access could potentially delete, corrupt, or
+        replace files accessible to the crawler process, and thus cause more
+        extensive problems on the crawler machine.</p><p>Another potential risk is that some worst-case or
+        maliciously-crafted crawled content might, in combination with crawler
+        bugs, disrupt the crawl or other files or operations of the local
+        system. For example, in the past, even without malicious intent, some
+        rich-media content has caused runaway memory use in 3rd-party
+        libraries used by the crawler, resulting in a memory-exhaustion
+        condition that can stop or corrupt a crawl in progress. Similarly,
+        atypical input patterns have at times caused runaway CPU use by
+        crawler link-extraction regular expressions, severely slowing crawls.
+        Crawl operators should monitor their crawls closely and stay informed
+        via the project discussion list and bug database for any newly
+        discovered similar bugs.</p></div></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="intro.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="wui.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">1.&nbsp;Introduction&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;3.&nbsp;Web based user interface</td></tr></table></div></body></html>

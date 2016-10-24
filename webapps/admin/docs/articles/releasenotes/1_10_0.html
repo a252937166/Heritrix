@@ -1,0 +1,260 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>10.&nbsp;Release 1.10.0 - 2006-09-11</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix Release Notes"><link rel="up" href="index.html" title="Heritrix Release Notes"><link rel="prev" href="1_10_1.html" title="9.&nbsp;Release 1.10.1 - 2006-09-27"><link rel="next" href="1_8_0.html" title="11.&nbsp;Release 1.8.0 - 2006-05-05"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">10.&nbsp;Release 1.10.0 - 2006-09-11</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="1_10_1.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="1_8_0.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="1_10_0"></a>10.&nbsp;Release 1.10.0 - 2006-09-11</h2></div></div></div><div class="abstract"><p class="title"><b>Abstract</b></p><p>Release 1.10.0 adds new configuration options, experimental new
+      protocol and format support, and lots of fixes. 43 tracked bugs have
+      been fixed and 35 feature requests added.</p><p>Release 1.10.0 requires JDK 1.5.x ("Java 5") Java
+      facilities.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="1_10_0_contributors"></a>10.1.&nbsp;Contributors</h3></div></div></div><p>Aside from the <a href="http://crawler.archive.org/team-list.html" target="_top">usual suspects</a>,
+      the following contributed to this release: <div class="itemizedlist"><ul type="disc"><li><p>Eric C Jensen</p></li><li><p>Olaf Freyer</p></li><li><p>Karl Wright (of MetaCarta)</p></li><li><p>Frank McCown (of Old Dominion University)</p></li><li><p>Max Sch&ouml;fmann</p></li><li><p>S&oslash;ren Vejrup Carlsen (of Royal Library, Denmark)</p></li></ul></div></p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="1_10_0_limitations"></a>10.2.&nbsp;Known Limitations/Issues</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="1_10_0_limitations_bdb_nfs"></a>10.2.1.&nbsp;java.io.IOException: No locks available</h4></div></div></div><p>See <a href="1_8_0.html#bdb_nfs" title="11.1.1.&nbsp;java.io.IOException: No locks available">Section&nbsp;11.1.1, &ldquo;java.io.IOException: No locks available&rdquo;</a> in 1.8.0 Release Notes.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="old_checkpoints_and_old_order_files"></a>10.3.&nbsp;Pre-1.10.0 checkpoints</h3></div></div></div><p>For sure 1.8.0 checkpoints will not be recoverable with
+      1.10.0.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="1_10_0_changes"></a>10.4.&nbsp;Changes</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="admindefaults"></a>10.4.1.&nbsp;No default login/password for web UI and JMX</h4></div></div></div><p>The old default login of 'admin' and password of 'letmein' for
+        access to the crawler web UI (and JMX agent control) have been
+        eliminated. It is now necessary to specify an access username and
+        password to start Heritrix. This may be done with the -a or --admin
+        command-line argument or via the system property
+        'heritrix.cmdline.admin'. (These each take a colon-separated username
+        and password, like 'username:password'.)</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="localhostonly"></a>10.4.2.&nbsp;Web UI binds to localhost only by default</h4></div></div></div><p>Previously, the Jetty web server that runs the Heritrix web UI
+        listened on all available network interfaces. In 1.10.0, Jetty will
+        only bind to localhost by default. The -b or --bind command-line
+        argument can be used to specify a different interface or list of
+        interfaces to bind to instead. You may specify "-b /" to get the old
+        behavior -- binding on all interfaces -- but only take this step after
+        reading section 2.3 of the User Manual, "Security
+        Considerations".</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="quotaretire"></a>10.4.3.&nbsp;QuotaEnforcer 'force-retire' option</h4></div></div></div><p>The optional QuotaEnforcer processor has a new setting,
+        'force-retire', which is by default 'true', and changes the default
+        behavior of QuotaEnforcer. Previously, when a URI was noted as being
+        over-quota, it would be marked with a special over-quota failure code
+        which caused it to complete processing as an error. As a result, all
+        over-quota URIs would quickly be finished as errors and appear in the
+        crawl.log, but there would be no opportunity to raise the quota and
+        continue crawling.</p><p>The new default behavior instead marks the URI with a directive
+        requesting its frontier queue be retired. If the frontier supports
+        this directive, the URI will be returned to its queue as if never
+        tried, and the whole queue retired from active crawling. This offers
+        the opportunity to raise the quota and continue crawling the URI and
+        others of its queue. (All settings changes cause all retired queues to
+        be reevaluated.) However, the over-quota URIs will not appear as
+        errors in the crawl.log.</p><p>If the old behavior is preferred, set 'force-retire' to
+        'false'.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="1_10_0canonicalization"></a>10.4.4.&nbsp;URL canonicalization changes</h4></div></div></div><p>In 1.10.0, URL canonicalization has changed in two ways. First,
+        the stripping of sessionids has improved [See <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1550797&group_id=73833&atid=539099" target="_top">Stripping
+        sessionid can leave behind doubled ampersands</a>]. Previous, if
+        the sessionid was in the middle of a query string bookended by other
+        query parameters, canonicalization would leave behind the encasing
+        ampersands: E.g. If the URL
+        <code class="literal">http://a.com/?a=1&amp;sid=00000000000000000000000000000000&amp;b=1</code>
+        was passed through canonicalization, the result would be:
+        <code class="literal">http://a.com/?a=1&amp;&amp;b1</code>. This has been fixed
+        so that the result will now be:
+        <code class="literal">http://a.com/?a=1&amp;b1</code>.</p><p>The second change, <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1550805&group_id=73833&atid=539102" target="_top">[1550805]
+        Add stripping of coldfusion sessionids</a>, adds the new
+        coldfusion sessionid stripper to the list of default canonicalization
+        rules.</p><p>We bring your attention to these seemingly minor changes because
+        for those of you running regular crawls, with both of the above
+        changes in place, depending on the type of crawl, there should be a
+        reduction in overall the number of (duplicate) pages crawled.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="warc"></a>10.4.5.&nbsp;WARC</h4></div></div></div><p>This release includes experimental WARC readers and writers. Be
+        warned that both code and specification are not yet final and so are
+        both subject to change with no guarantees of backward compatibility:
+        i.e. newer readers may not be able to read WARCs written with older
+        writers. See the <a href="/apidocs/org/archive/io/warc/package-summary.html" target="_top">org.archive.io.warc</a>
+        package documentation for more on the current state of code including
+        documentation of initial version of <code class="code">Arc2Warc</code> and
+        <code class="code">Warc2Arc</code> tools.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N102E1"></a>10.4.6.&nbsp;FTP</h4></div></div></div><p>This release also include experimental support for FTP. This
+        support is disabled by the default heritrix configuration. See the
+        User Guide for information on how to enable FTP.</p></div><p>
+        <div class="table"><a name="N102E8"></a><p class="title"><b>Table&nbsp;3.&nbsp;All Tracked Changes</b></p><table summary="All Tracked Changes" border="1"><colgroup><col><col><col><col><col><col></colgroup><thead><tr><th>ID</th><th>Type</th><th>Summary</th><th>Open Date</th><th>By</th><th>Filer</th></tr></thead><tbody><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1545462&group_id=73833&atid=539102" target="_top">1545462</a>
+                </td><td>Add</td><td>Experimental WARC Readers and Writers</td><td>2006-08-23</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1494491&group_id=73833&atid=539102" target="_top">1494491</a>
+                </td><td>Add</td><td>path/role-sensitive robots (eg ignore for inline
+                images/css)</td><td>2006-05-24</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1550849&group_id=73833&atid=539102" target="_top">1550849</a>
+                </td><td>Add</td><td>'Implied' URI extractor (eg, YouTube)</td><td>2006-09-01</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1549665&group_id=73833&atid=539102" target="_top">1549665</a>
+                </td><td>Add</td><td>Add experimental Warc2Arc and Arc2Warc scripts</td><td>2006-08-30</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1546829&group_id=73833&atid=539102" target="_top">1546829</a>
+                </td><td>Add</td><td>Secure admin UI: Bind cmd-line argument</td><td>2006-08-25</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1545600&group_id=73833&atid=539102" target="_top">1545600</a>
+                </td><td>Add</td><td>remove default admin username/password</td><td>2006-08-23</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1536441&group_id=73833&atid=539102" target="_top">1536441</a>
+                </td><td>Add</td><td>hash-based CrawlMapper</td><td>2006-08-08</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1535744&group_id=73833&atid=539102" target="_top">1535744</a>
+                </td><td>Add</td><td>force reread of disk settings (for out-of-JVM/bulk
+                changes)</td><td>2006-08-06</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1534280&group_id=73833&atid=539102" target="_top">1534280</a>
+                </td><td>Add</td><td>scriptable (beanshell) Processor, DecideRule
+                options</td><td>2006-08-03</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1522112&group_id=73833&atid=539102" target="_top">1522112</a>
+                </td><td>Add</td><td>CrawlMapper skip mapping 'E'mbeds (etc)</td><td>2006-07-13</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1520269&group_id=73833&atid=539102" target="_top">1520269</a>
+                </td><td>Add</td><td>keep over-limit (-500X) URIs in queues (don't
+                'finish/log)</td><td>2006-07-10</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1387423&group_id=73833&atid=539102" target="_top">1387423</a>
+                </td><td>Add</td><td>[arcreader] Fetch records and iterate remote
+                ARCs</td><td>2005-12-21</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1351778&group_id=73833&atid=539102" target="_top">1351778</a>
+                </td><td>Add</td><td>favicon.ico for heritrix web ui</td><td>2005-11-08</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1209724&group_id=73833&atid=539102" target="_top">1209724</a>
+                </td><td>Add</td><td>[contrib] Add
+                BigMapFactory.getSynchronizedBigMap</td><td>2005-05-27</td><td>gojomo</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1526781&group_id=73833&atid=539102" target="_top">1526781</a>
+                </td><td>Add</td><td>broader rotation / wider 'frontline' frontier queue
+                option</td><td>2006-07-21</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1092496&group_id=73833&atid=539102" target="_top">1092496</a>
+                </td><td>Add</td><td>crawl.log should have hash of DNS records</td><td>2004-12-28</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1006194&group_id=73833&atid=539102" target="_top">1006194</a>
+                </td><td>Add</td><td>FTP fetching</td><td>2004-08-09</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1550805&group_id=73833&atid=539102" target="_top">1550805</a>
+                </td><td>Add</td><td>Add stripping of coldfusion sessionids -- add to
+                default lis</td><td>2006-09-01</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1547390&group_id=73833&atid=539102" target="_top">1547390</a>
+                </td><td>Add</td><td>[contrib] patch to allow setting local IP to bind fetch
+                from</td><td>2006-08-26</td><td>stack-sf</td><td>ecjensen</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1545847&group_id=73833&atid=539102" target="_top">1545847</a>
+                </td><td>Add</td><td>[contrib] allow to specify alternative conf
+                location</td><td>2006-08-24</td><td>stack-sf</td><td>pandae</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1545840&group_id=73833&atid=539102" target="_top">1545840</a>
+                </td><td>Add</td><td>[contrib] ContentLengthFilter</td><td>2006-08-24</td><td>stack-sf</td><td>pandae</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1537507&group_id=73833&atid=539102" target="_top">1537507</a>
+                </td><td>Add</td><td>Add checkpointing selftest</td><td>2006-08-09</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1535116&group_id=73833&atid=539102" target="_top">1535116</a>
+                </td><td>Add</td><td>Add creation/deletion of Heritrix instances to
+                UI</td><td>2006-08-05</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1530557&group_id=73833&atid=539102" target="_top">1530557</a>
+                </td><td>Add</td><td>[contrib] Enhanced UI seed and crawl reports</td><td>2006-07-28</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1523276&group_id=73833&atid=539102" target="_top">1523276</a>
+                </td><td>Add</td><td>Should support depth-first search priority scheduling
+                (patch</td><td>2006-07-15</td><td>stack-sf</td><td>ecjensen</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1518583&group_id=73833&atid=539102" target="_top">1518583</a>
+                </td><td>Add</td><td>Improved handling when alloted runtime is
+                exceeded</td><td>2006-07-07</td><td>kristinn_sig</td><td>kristinn_sig</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1514538&group_id=73833&atid=539102" target="_top">1514538</a>
+                </td><td>Add</td><td>(contrib) Provide Windows batch file version of
+                scripts</td><td>2006-06-29</td><td>nobody</td><td>ecjensen</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1510807&group_id=73833&atid=539102" target="_top">1510807</a>
+                </td><td>Add</td><td>[contrib] Have Heritrix UI bind to localhost
+                only</td><td>2006-06-22</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1505111&group_id=73833&atid=539102" target="_top">1505111</a>
+                </td><td>Add</td><td>Make deciding-default profile the default
+                profile</td><td>2006-06-12</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1489231&group_id=73833&atid=539102" target="_top">1489231</a>
+                </td><td>Add</td><td>Move to java 5.0/1.5.0</td><td>2006-05-15</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1388295&group_id=73833&atid=539102" target="_top">1388295</a>
+                </td><td>Add</td><td>[contrib] Throttling on a per-document basis</td><td>2005-12-22</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1153882&group_id=73833&atid=539102" target="_top">1153882</a>
+                </td><td>Add</td><td>change username/password after launch</td><td>2005-02-28</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1058324&group_id=73833&atid=539102" target="_top">1058324</a>
+                </td><td>Add</td><td>Show old crawl reports in UI (Was: Reports on
+                finished...)</td><td>2004-11-01</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=986985&group_id=73833&atid=539102" target="_top">986985</a>
+                </td><td>Add</td><td>Fix API to allow ARCWriter replacement</td><td>2004-07-07</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1540381&group_id=73833&atid=539099" target="_top">1540381</a>
+                </td><td>Fix</td><td>proxying of https gives errors/garbage/later
+                problems</td><td>2006-08-14</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1534082&group_id=73833&atid=539099" target="_top">1534082</a>
+                </td><td>Fix</td><td>override of user-agents and masquerade not
+                working</td><td>2006-08-03</td><td>karl-ia</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1495253&group_id=73833&atid=539099" target="_top">1495253</a>
+                </td><td>Fix</td><td>multiple usage of same arc id number within same
+                crawl</td><td>2006-05-25</td><td>karl-ia</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1533571&group_id=73833&atid=539099" target="_top">1533571</a>
+                </td><td>Fix</td><td>Checkpointing is broken (Parts 1 and 2)</td><td>2006-08-02</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1511596&group_id=73833&atid=539099" target="_top">1511596</a>
+                </td><td>Fix</td><td>incorrect resolving relative links from flash files
+                (swf)</td><td>2006-06-23</td><td>karl-ia</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1510289&group_id=73833&atid=539099" target="_top">1510289</a>
+                </td><td>Fix</td><td>CSS keywords are case sensetive in extraction</td><td>2006-06-21</td><td>gojomo</td><td>cathcart</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1489132&group_id=73833&atid=539099" target="_top">1489132</a>
+                </td><td>Fix</td><td>Contain HttpClient HttpParser's OutOfMemoryError
+                risk</td><td>2006-05-15</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1442679&group_id=73833&atid=539099" target="_top">1442679</a>
+                </td><td>Fix</td><td>HTMLExtractor and application/xhtml+xml type?</td><td>2006-03-03</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1549627&group_id=73833&atid=539099" target="_top">1549627</a>
+                </td><td>Fix</td><td>Archive file serialnumber is always 1 after
+                checkpoint</td><td>2006-08-30</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1546808&group_id=73833&atid=539099" target="_top">1546808</a>
+                </td><td>Fix</td><td>Don't resume crawl after checkpoint if state is
+                'pausing'</td><td>2006-08-25</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1542933&group_id=73833&atid=539099" target="_top">1542933</a>
+                </td><td>Fix</td><td>adjust prominence of instance/identifier
+                info/tab</td><td>2006-08-18</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1540030&group_id=73833&atid=539099" target="_top">1540030</a>
+                </td><td>Fix</td><td>FetchDNS IOException: Stream closed</td><td>2006-08-14</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1538489&group_id=73833&atid=539099" target="_top">1538489</a>
+                </td><td>Fix</td><td>HeritrixProtocolSocketFactory synchronization causes
+                delays</td><td>2006-08-11</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1534153&group_id=73833&atid=539099" target="_top">1534153</a>
+                </td><td>Fix</td><td>don't insist on robots.txt if it need not be
+                honored</td><td>2006-08-03</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1532787&group_id=73833&atid=539099" target="_top">1532787</a>
+                </td><td>Fix</td><td>OnDomainsDecideRule not working as expected</td><td>2006-08-01</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1532665&group_id=73833&atid=539099" target="_top">1532665</a>
+                </td><td>Fix</td><td>AddRedirectFromRootServerToScope not working as
+                expected</td><td>2006-08-01</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1519056&group_id=73833&atid=539099" target="_top">1519056</a>
+                </td><td>Fix</td><td>IPQueueAssignmentPolicy broken by method signature
+                mismatch</td><td>2006-07-07</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1514716&group_id=73833&atid=539099" target="_top">1514716</a>
+                </td><td>Fix</td><td>heritrix fails to save accept-headers in an
+                override</td><td>2006-06-29</td><td>karl-ia</td><td>magin-ia</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1511624&group_id=73833&atid=539099" target="_top">1511624</a>
+                </td><td>Fix</td><td>NoOnDomainsDecideRule/NotOnHostsDecideRule superclass
+                wrong</td><td>2006-06-23</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1482210&group_id=73833&atid=539099" target="_top">1482210</a>
+                </td><td>Fix</td><td>CachedBdbMap.keySet inefficient or broken</td><td>2006-05-04</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1475798&group_id=73833&atid=539099" target="_top">1475798</a>
+                </td><td>Fix</td><td>ARCReader#read(byte [], off, len) broke for non-null
+                offset</td><td>2006-04-24</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1189825&group_id=73833&atid=539099" target="_top">1189825</a>
+                </td><td>Fix</td><td>ARC problem causing .invalid suffix needs better
+                reporting</td><td>2005-04-25</td><td>paul_jack</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1056919&group_id=73833&atid=539099" target="_top">1056919</a>
+                </td><td>Fix</td><td>NPE at CrawlStateUpdater.java:70
+                http:/robots.txt</td><td>2004-10-29</td><td>karl-ia</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=998275&group_id=73833&atid=539099" target="_top">998275</a>
+                </td><td>Fix</td><td>doc security considerations</td><td>2004-07-26</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1549587&group_id=73833&atid=539099" target="_top">1549587</a>
+                </td><td>Fix</td><td>[jdk1.6] ComplexType#toString infinite loop</td><td>2006-08-30</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1543751&group_id=73833&atid=539099" target="_top">1543751</a>
+                </td><td>Fix</td><td>ConcurrentModificationException in web UI frontier
+                report</td><td>2006-08-20</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1522108&group_id=73833&atid=539099" target="_top">1522108</a>
+                </td><td>Fix</td><td>LinksScoper scope-embedded-links
+                inconsistent/confusing</td><td>2006-07-13</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1521563&group_id=73833&atid=539099" target="_top">1521563</a>
+                </td><td>Fix</td><td>UURIFactory '//' collapsing overeager</td><td>2006-07-12</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1519055&group_id=73833&atid=539099" target="_top">1519055</a>
+                </td><td>Fix</td><td>queued count wrong with retired queues; crawl doesn't
+                end</td><td>2006-07-07</td><td>karl-ia</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1469517&group_id=73833&atid=539099" target="_top">1469517</a>
+                </td><td>Fix</td><td>ARCWriterPool not fair to threads</td><td>2006-04-12</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1379040&group_id=73833&atid=539099" target="_top">1379040</a>
+                </td><td>Fix</td><td>regex for midfetch filter not being stored in crawl
+                order</td><td>2005-12-12</td><td>gojomo</td><td>nobody</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1550797&group_id=73833&atid=539099" target="_top">1550797</a>
+                </td><td>Fix</td><td>Stripping sessionid can leave behind doubled
+                ampersands</td><td>2006-09-01</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1541645&group_id=73833&atid=539099" target="_top">1541645</a>
+                </td><td>Fix</td><td>excessive WakeTask may be scheduled</td><td>2006-08-16</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1534925&group_id=73833&atid=539099" target="_top">1534925</a>
+                </td><td>Fix</td><td>Remove MirrorJNDI. Its GPL</td><td>2006-08-04</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1517693&group_id=73833&atid=539099" target="_top">1517693</a>
+                </td><td>Fix</td><td>[extractorhtml] Passes through entity-encodings</td><td>2006-07-05</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1516354&group_id=73833&atid=539099" target="_top">1516354</a>
+                </td><td>Fix</td><td>Job's crawl report link produces report for different
+                job</td><td>2006-07-03</td><td>nobody</td><td>fmccown</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1511609&group_id=73833&atid=539099" target="_top">1511609</a>
+                </td><td>Fix</td><td>Browsers tolerate newlines in URLs, Heritrix
+                doesn't</td><td>2006-06-23</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1507554&group_id=73833&atid=539099" target="_top">1507554</a>
+                </td><td>Fix</td><td>Values from dropdown getting tacked on for next
+                hit.</td><td>2006-06-16</td><td>stack-sf</td><td>nobody</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1503781&group_id=73833&atid=539099" target="_top">1503781</a>
+                </td><td>Fix</td><td>[jmx] Add rebind to JNDI</td><td>2006-06-09</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1490806&group_id=73833&atid=539099" target="_top">1490806</a>
+                </td><td>Fix</td><td>hangs with queued documents not being assigned to
+                queues</td><td>2006-05-18</td><td>nobody</td><td>pandae</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1489155&group_id=73833&atid=539099" target="_top">1489155</a>
+                </td><td>Fix</td><td>httpclient list of proto-factories is static</td><td>2006-05-15</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1479727&group_id=73833&atid=539099" target="_top">1479727</a>
+                </td><td>Fix</td><td>Non-serializable class ARCReader contains
+                Exception</td><td>2006-05-01</td><td>stack-sf</td><td>lars_clausen</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1469739&group_id=73833&atid=539099" target="_top">1469739</a>
+                </td><td>Fix</td><td>escapeJavaScript should escape HTML problem
+                characters</td><td>2006-04-13</td><td>paul_jack</td><td>pandae</td></tr></tbody></table></div>
+      </p></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="1_10_1.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="1_8_0.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">9.&nbsp;Release 1.10.1 - 2006-09-27&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;11.&nbsp;Release 1.8.0 - 2006-05-05</td></tr></table></div></body></html>

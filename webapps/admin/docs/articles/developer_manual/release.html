@@ -1,0 +1,43 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>C.&nbsp;Making a Heritrix Release</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix developer documentation"><link rel="up" href="index.html" title="Heritrix developer documentation"><link rel="prev" href="release_numbering.html" title="B.&nbsp;Version and Release Numbering"><link rel="next" href="schema.html" title="D.&nbsp;Settings XML Schema"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">C.&nbsp;Making a Heritrix Release</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="release_numbering.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="schema.html">Next</a></td></tr></table><hr></div><div class="appendix" lang="en" id="release"><div class="titlepage"><div><div><h2 class="title"><a name="release"></a>C.&nbsp;Making a Heritrix Release</h2></div></div></div><p>Before initiating a release, its assumed that the current HEAD
+    or BRANCH version has been run through the integration self test, 
+    that all unit tests pass, that the embryonic 
+    <a href="http://crawler.archive.org/cgi-bin/wiki.pl?CrawlTestPlan" target="_top">test
+    plan</a> has been exercised,
+    and that general usage shows HEAD -- or BRANCH -- to be release
+    worthy.</p><div class="orderedlist"><ol type="1"><li><p>Send a mail to the list to freeze commits until the all-clear is
+        given.</p></li><li><p>Up the project.xml 'currentVersion' element value (See
+        <a href="#release_numbering" target="_top">Version and Release Numbering</a>
+        for guidance on what version number to use)</p></li><li><p>Update releasenotes.xml bugs and RFEs closed since last
+        release (Looking at source code history to figure what's changed is too
+        hard; All major changes should have associated BUG and RFE).</p></li><li><p>Add news of the new release to the site main home page.</p></li><li><p>Generate the site. Review all documentation making sure it
+        remains applicable. Fix at least the embarrassing. Make issues to have
+        all that remains addressed.</p></li><li><p>Update the README.txt (We used to include in README text-only version
+        of dependencies list, release notes including items fixed but now we just
+        point to the pertintent html).</p></li><li><p>Commit all changes made above all in the one commit with a log
+        message about new release. Commit files with the new version, the
+        README.txt, home page, and all changes in documentation including the changelog
+        additions.</p></li><li><p>Wait on a cruisecontrol successful build of all just committed.
+        Download the src and binary latest builds from under the cruisecontrol
+        'build artifacts' link.</p></li><li><p>Build the cruisecontrol produced src distribution
+        version.</p></li><li><p>Run both the binary and src-built product through the
+        integration self test suite: % $HERITRIX_HOME/bin/heritrix
+        --selftest</p></li><li><p>Tag the repository.  If a bugfix release -- an
+        increase in the least significant digits -- then tag the 
+        release. Otherwise, if a major or minor release make a branch
+        (See <a href="release_numbering.html" title="B.&nbsp;Version and Release Numbering">Appendix&nbsp;B, <i>Version and Release Numbering</i></a> for more on release
+        versioning).
+        Tags should be named for the release name as in if the release
+        is 1.10.2, then the tag should be heritrix-1_10_2 (You can't use
+        dots in tag names).  If a branch, then name the branch for the
+        minor (or major) version name as in, 
+        if making a release 1.10.0, then name the branch heritrix-1_10
+            and if making 2.0.0, name the branch heritrix-2. 
+        </p></li><li><p>Update the project.xml 'currentVersion' and build.xml 'version'
+        property to both be a version number beyond that of the release
+        currently being made (If we're releasing 0.2.0, then increment to
+        0.3.0).</p></li><li><p>Login and upload the maven 'dist' product to sourceforge into
+        the admin-&gt;File releases section.</p></li><li><p>Send announcement to mailinglist -- and give an all-clear that
+        commits may resume -- and update our release state on freshmeat site
+        (Here is the URL I used creating our freshmeat project:
+        http://freshmeat.net/add-project/all-done/43820/46804/ -- 46804 is our
+        project ID).</p></li></ol></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="release_numbering.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="schema.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">B.&nbsp;Version and Release Numbering&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;D.&nbsp;Settings XML Schema</td></tr></table></div></body></html>

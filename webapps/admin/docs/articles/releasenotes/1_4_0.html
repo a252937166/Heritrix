@@ -1,0 +1,390 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>13.&nbsp;Release 1.4.0 - 2005-04-28</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix Release Notes"><link rel="up" href="index.html" title="Heritrix Release Notes"><link rel="prev" href="1_6_0.html" title="12.&nbsp;Release 1.6.0 - 2005-12-01"><link rel="next" href="1_2_0.html" title="14.&nbsp;Release 1.2.0 - 2004-11-16"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">13.&nbsp;Release 1.4.0 - 2005-04-28</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="1_6_0.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="1_2_0.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="1_4_0"></a>13.&nbsp;Release 1.4.0 - 2005-04-28</h2></div></div></div><div class="abstract"><p class="title"><b>Abstract</b></p><p>Much improved memory usage, new scoping/filter model, and a new
+      revisiting frontier. Over 90 bugs fixed.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="1_4_0_limitations"></a>13.1.&nbsp;Known Limitations/Issues</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="glibc2_3_2"></a>13.1.1.&nbsp;Glibc 2.3.2 and NPTL</h4></div></div></div><p>NPTL is the 'new' linux threading model. It replaces
+        <span class="emphasis"><em>linuxthreads</em></span> the 'old' model. You can tell you're
+        running NPTL if your java process shows as one process only in the
+        process listing. Wwith linuxthreads, all java threads show as distinct
+        linux processes. Linux threading is integral to glibc.</p><p>On rare occasions we've seen the crawler hang without obvious
+        explaination when running with NPTL threading on linux. Doing a thread
+        dump on the hung crawler, one version of the hung crawler has threads
+        waiting to obtain a lock that no one apparently holds. Our reading has
+        these rare, crawl-killing, hangs as a problem in glbc2.3.2 when
+        running with NPTL (NPTL 0.60) (We used to hang frequently but
+        workarounds seem to have mitigated the frequency of lockup making it
+        extremely rare). An upgrade to glibc2.3.3+ seems to do away with these
+        hangs. Glibc2.3.3 has NPTL 0.61. Fedora3 has glibc2.3.4. If an upgrade
+        is not possible -- for example, the new glibc is not currently
+        available for debian -- you can disable NPTL and run with old threads
+        by setting the environment variable
+        <code class="literal">LD_ASSUME_KERNEL=2.4.1</code> (You can set this
+        environment variable on a per process basis).</p><p>NPTL is usually the default threading model on linux and is
+        usually what you want -- threads are more lightweight and java
+        throughput seems to be slightly higher with NPTL enabled. Various are
+        the ways in which you can see which threading model you are using. Do
+        an ldd on the java executable to see what shared libraries its using.
+        Note the location of the glibc shared library. Executing
+        <code class="literal">PATH_TO_GLIBC/lib.so.6</code>, usually
+        <code class="literal">/lib/lib.so.6</code>, will list details on glibc. Look in
+        the listing for either 'nptl' or 'linuxthreads'. On debian systems,
+        lib.so.6 is not executable but you can make it so. You can also do the
+        following to determine library versions and which threading you are
+        using: <code class="literal">% getconf GNU_LIBC_VERSION</code> and <code class="literal">%
+        getconf GNU_LIBPTHREAD_VERSION</code>.</p><p>See <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1086554&group_id=73833&atid=539099" target="_top">[
+        1086554 ] glibc 2.3.2 NPTL hang (Was bdbfrontier stall in...)</a>
+        for more on the issue.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="1093962"></a>13.1.2.&nbsp;<a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1093962&group_id=73833&atid=539099" target="_top">[1093962]
+        SSL handshake fails when server requests switch to SSL
+        V3</a></h4></div></div></div><p>When connecting to a secure server, if the server wants to
+        switch from SSL V2 to SSL V3 when client is using a SUN JVM, the
+        connection fails. See issue 1093962for more.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="old_jobs_profiles"></a>13.1.3.&nbsp;Using old jobs or profiles with 1.4</h4></div></div></div><p>You'll need to make one change to make your old order.xml files
+        and profiles to run with Heritrix 1.4.x. Below is a diff that shows
+        the change that needs to be made (The type of the
+        <code class="literal">path</code> changed from <code class="literal">string</code> to
+        <code class="literal">stringList</code>): <pre class="programlisting">+++ order.xml   2005-02-01 13:12:34.000000000 -0800
+@@ -162,7 +162,9 @@
+         &lt;string name="prefix"&gt;BT&lt;/string&gt;
+         &lt;string name="suffix"&gt;&lt;/string&gt;
+         &lt;integer name="max-size-bytes"&gt;100000000&lt;/integer&gt;
+-        &lt;string name="path"&gt;arcs&lt;/string&gt;
++        &lt;stringList name="path"&gt;
++          &lt;string&gt;arcs&lt;/string&gt;
++        &lt;/stringList&gt;
+         &lt;integer name="pool-max-active"&gt;5&lt;/integer&gt;
+         &lt;integer name="pool-max-wait"&gt;300000&lt;/integer&gt;
+       &lt;/newObject&gt;</pre></p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="cme_frontier"></a>13.1.4.&nbsp;<a href="https://sourceforge.net/tracker/?func=detail&atid=539099&aid=1119644&group_id=73833" target="_top">[
+        1119644 ] frontier ConcurrentModificationException</a></h4></div></div></div><p>Sometimes you'll get a ConcurrentModificationException exception
+        when you go to view or refresh the Frontier's report page. Workaround
+        is to retry. The page should eventually come up.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="arcfile_suffix"></a>13.1.5.&nbsp;New ARC file suffix</h4></div></div></div><p>Pre-release 1.2.0, currently open ARC files that are being
+        written to by the crawler were differentiated by an '.open' suffix.
+        When the crawler finished writing, the suffix was removed. A new
+        suffix has been introduced -- '.invalid' -- which the crawler will use
+        to mark ARC files it thinks suspect -- usually because there was an
+        IOException thrown during the writing of an ARC Record. Such ARCs need
+        to be checked for validity. Run <code class="literal">% gzip -t</code> and
+        <code class="literal">% ARCReader --strict</code> against all files with an
+        '.invalid' suffix -- and any unclosed '.open' files present after a
+        crawl has ended -- to check for corruption.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="1149470"></a>13.1.6.&nbsp;DNS lookups fail (-6 in crawl.log)</h4></div></div></div><p><a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1149470&group_id=73833&atid=539099" target="_top">[1149470]
+        all DNS attempts fail -6</a> discusses badly-formatted DNS records
+        returned on windows platform that Heritrix fails to parse and it
+        includes a pointer to a mailing list discussion of failed lookups on
+        non-english windows. The issue includes description of a
+        workaround.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="1178102"></a>13.1.7.&nbsp;FatalConfigurationException creating new job based on
+        old</h4></div></div></div><p>Older SUN JVMS -- pre-beta3 versions of the SUN JVM 1.5.0 for
+        instance -- had an issue using nio copying files. Try upgrading your
+        JVM. See <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1178102&group_id=73833&atid=539099" target="_top">[1178102]
+        FCE on creation of new job based on job w/ overrides</a> for more
+        on this.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="oome142"></a>13.1.8.&nbsp;OutOfMemoryErrors (OOMEs)</h4></div></div></div><p>Unusual pages -- pages of unorthodox structure, pages that
+        contain thousands upon thousands of links -- will on occasion produce
+        OOMEs.</p><p>There have been improvements regards memory usage running
+        multiple jobs in series, <a href="1_2_0.html#oome_pending_jobs" title="14.1.3.&nbsp;Running more than one job in series throws OOME">Section&nbsp;14.1.3, &ldquo;Running more than one job in series throws OOME&rdquo;</a>, but
+        starting up a new job after a long-running job can prompt OOMEs.
+        Workaround for now is to restart Heritrix between the running of big
+        jobs.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="1_4_0_changes"></a>13.2.&nbsp;Changes</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="bdbfrontier"></a>13.2.1.&nbsp;Berkeley DB Based Frontier</h4></div></div></div><p>The BdbFrontier -- a frontier that keeps its queues of URIs in
+        <a href="http://www.sleepycat.com/products/je.shtml" target="_top">Berkeley DB
+        Java Edition</a> databases -- has been made the default Frontier.
+        Other core datastructures such as the queue of 'alreadyseen' URIs have
+        also been moved into bdbje databases.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="dns_arc_ip"></a>13.2.2.&nbsp;The IP in dns ARC Records</h4></div></div></div><p>Dns entries in ARCs look like this: <pre class="programlisting">dns:www.archive.org 207.241.238.254 20050310233154 text/dns 58 20050310233154
+www.archive.org.        1600    IN      A       207.241.224.241</pre>
+        The above record is for the lookup of www.archive.org.</p><p>Previous to 1.4.0, the IP used on the ARC Record metaline -- the
+        first line of an ARC Record entry (207.241.238.254 in the above
+        example) -- was the IP of the host looked up. As of 1.4.0, we write
+        the IP of the dns server that returned us the address looked up.
+        Previous to this there was no recording of the dnsserver IP.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="arf"></a>13.2.3.&nbsp;AdaptiveRevisitFrontier</h4></div></div></div><p>A new, experimental Frontier with configurable revisiting policy
+        and tools for noticing page change, etc.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="dr"></a>13.2.4.&nbsp;DecidingScope and DecidingFilter</h4></div><div><h5 class="subtitle">A.K.A New Scoping Model</h5></div></div></div><p>A new, experimental scope and filter that allow the user to pick
+        and choose from an assortment of ready-made decision rules and have
+        each rule applied in an orderable sequence. The last non-PASS decision
+        stands as the aggregate decision for the decide rule sequence.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="mem_improvements"></a>13.2.5.&nbsp;Crawl Size Upper Bounds Update</h4></div></div></div><p>Memory usage has been improved in this release. Previously
+        RAM-based datastructures that grew without bound now are disk-backed
+        kept in berkeley db databases. Where previous, see <a href="1_0_0.html#upper_bounds" title="17.1.1.&nbsp;Crawl Size Upper Bounds">Section&nbsp;17.1.1, &ldquo;Crawl Size Upper Bounds&rdquo;</a>, Heritrix was unsuited for broad crawling,
+        while still experimental, using default memory settings -- a heap of
+        256m -- broad-crawls of 5 to 6 days before encountering
+        OutOfMemoryErrors (OOMEs) are now possible; longer if more heap is
+        assigned. Where 10k hosts was an upper bound on narrow domain- or
+        host-scoped crawls, now, using the default heap size, it should now be
+        possible to do 500k+ hosts.</p><p>Long-running crawls that encounter hundreds-of-thousands of
+        hosts over the life of a crawl, or crawls started with
+        hundreds-of-thousands of seeds, continue to throw OutOfMemoryErrors
+        because there are still a few RAM-based datastructures that grow
+        without bound left in Heritrix; the lists of queue names and internal
+        structures inside 3rd party libraries used by Heritrix. These last few
+        items we intend to address in a later release.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="ibmjvmredux"></a>13.2.6.&nbsp;IBM JVM Redux</h4></div></div></div><p>Testing with <code class="literal">IBM JVM 1.4.2 (Classic VM (build 1.4.2,
+        J2RE 1.4.2 IBM build cxia32142sr1a-20050209 (JIT enabled:
+        jitc)))</code> using Heritrix 1.4.0, the SSL problem described in
+        <a href="1_2_0.html#ibmjvm" title="14.1.1.&nbsp;IBM JVM">Section&nbsp;14.1.1, &ldquo;IBM JVM&rdquo;</a> is no longer present (All of our crawling of
+        the last couple of months has been done on the latest SUN 1.5.0
+        JVMs).</p></div><p>
+        <div class="table"><a name="N114C2"></a><p class="title"><b>Table&nbsp;6.&nbsp;Changes</b></p><table summary="Changes" border="1"><colgroup><col><col><col><col><col><col></colgroup><thead><tr><th>ID</th><th>Type</th><th>Summary</th><th>Open Date</th><th>By</th><th>Filer</th></tr></thead><tbody><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=958061" target="_top">958061</a>
+                </td><td>Add</td><td>[Post 1.0] New scoping model</td><td>2004-05-21</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1165205" target="_top">1165205</a>
+                </td><td>Add</td><td>Add links to issue tracking/RFE to Heritrix'
+                webapp</td><td>2005-03-17</td><td>nobody</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1119580" target="_top">1119580</a>
+                </td><td>Add</td><td>Integrate revisiting frontier</td><td>2005-02-09</td><td>kristinn_sig</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1093609" target="_top">1093609</a>
+                </td><td>Add</td><td>One-click recover</td><td>2004-12-30</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1078008" target="_top">1078008</a>
+                </td><td>Add</td><td>Enable crawl-end at target compressed-ARC-data
+                size</td><td>2004-12-02</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=934577" target="_top">934577</a>
+                </td><td>Add</td><td>Need 'delete profile' option (like delete job)</td><td>2004-04-13</td><td>kristinn_sig</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1058302" target="_top">1058302</a>
+                </td><td>Add</td><td>A 'dat' maker; A script to dump links</td><td>2004-11-01</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1114133" target="_top">1114133</a>
+                </td><td>Add</td><td>Add referer header</td><td>2005-02-01</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1143892" target="_top">1143892</a>
+                </td><td>Add</td><td>[contribution] SingleConnectionManager, range and close
+                hdrs</td><td>2005-02-18</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1055766" target="_top">1055766</a>
+                </td><td>Add</td><td>Dates in logs are unreadable.</td><td>2004-10-27</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1111656" target="_top">1111656</a>
+                </td><td>Add</td><td>Extractors should not extract if links already
+                extracted</td><td>2005-01-28</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1047437" target="_top">1047437</a>
+                </td><td>Add</td><td>Pause and alert on low-disk conditions</td><td>2004-10-14</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1104916" target="_top">1104916</a>
+                </td><td>Add</td><td>Add info to candidateURI before scheduling</td><td>2005-01-18</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=953994" target="_top">953994</a>
+                </td><td>Add</td><td>Change arc download dir mid-crawl</td><td>2004-05-14</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=894467" target="_top">894467</a>
+                </td><td>Add</td><td>Stopping, pausing, checkpointing from command
+                line/scripts</td><td>2004-02-10</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1096737" target="_top">1096737</a>
+                </td><td>Add</td><td>[jmx] client pword and always start jmx server</td><td>2005-01-05</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1090663" target="_top">1090663</a>
+                </td><td>Add</td><td>Move BDB to core of Heritrix</td><td>2004-12-23</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1092769" target="_top">1092769</a>
+                </td><td>Add</td><td>[ARCReader] If garbage on end of record, report and
+                skip it</td><td>2004-12-29</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1078016" target="_top">1078016</a>
+                </td><td>Add</td><td>'Economic' frontier which defers low-value URIs</td><td>2004-12-02</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1002704" target="_top">1002704</a>
+                </td><td>Add</td><td>Evaluate Berkeley DB Frontier</td><td>2004-08-03</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1083315" target="_top">1083315</a>
+                </td><td>Add</td><td>Update commons-pool, commons-collections, itext
+                jars</td><td>2004-12-10</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=988276" target="_top">988276</a>
+                </td><td>Add</td><td>ARC writer pool config. to write multiple disks</td><td>2004-07-09</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1078714" target="_top">1078714</a>
+                </td><td>Add</td><td>Command-line insertion of URLs</td><td>2004-12-03</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1069105" target="_top">1069105</a>
+                </td><td>Add</td><td>Make auto seed add on redirect optional (if happens at
+                all)</td><td>2004-11-18</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1002707" target="_top">1002707</a>
+                </td><td>Add</td><td>Fix heritrix shutdown (From Luca)</td><td>2004-08-03</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1065736" target="_top">1065736</a>
+                </td><td>Add</td><td>Recovery should optionally retain failures
+                ('Ff')</td><td>2004-11-13</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1057064" target="_top">1057064</a>
+                </td><td>Add</td><td>HTTPRecorder's default buffer sizes should be
+                configurable</td><td>2004-10-29</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539102&aid=1045817" target="_top">1045817</a>
+                </td><td>Add</td><td>Untangle heritrix from jetty</td><td>2004-10-12</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1036720" target="_top">1036720</a>
+                </td><td>Fix</td><td>NPE in ArcWriterProcessor.writeDns()</td><td>2004-09-28</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1178927" target="_top">1178927</a>
+                </td><td>Fix</td><td>'submodules' map-edits not working for
+                overrides/refinements</td><td>2005-04-07</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1179530" target="_top">1179530</a>
+                </td><td>Fix</td><td>NPE in FastBufferedOutputStream.close</td><td>2005-04-08</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1184102" target="_top">1184102</a>
+                </td><td>Fix</td><td>Frontier queues total still goes minus</td><td>2005-04-15</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1179527" target="_top">1179527</a>
+                </td><td>Fix</td><td>ARCWriter AsynchronousCloseException</td><td>2005-04-08</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1096855" target="_top">1096855</a>
+                </td><td>Fix</td><td>CME adding filters while crawling</td><td>2005-01-05</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1080378" target="_top">1080378</a>
+                </td><td>Fix</td><td>job config: settings 'remove'-component-then-submit
+                lost job</td><td>2004-12-06</td><td>nobody</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1176788" target="_top">1176788</a>
+                </td><td>Fix</td><td>hosts-report.txt is empty</td><td>2005-04-04</td><td>stack-sf</td><td>danavery</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1172183" target="_top">1172183</a>
+                </td><td>Fix</td><td>Delete URIs from frontier broken
+                (CachedBdbBigMap.values()?)</td><td>2005-03-28</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1178102" target="_top">1178102</a>
+                </td><td>Fix</td><td>FCE on creation of new job based on job w/
+                overrides</td><td>2005-04-06</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1178103" target="_top">1178103</a>
+                </td><td>Fix</td><td>hung bdb (12115 redux)</td><td>2005-04-06</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1169459" target="_top">1169459</a>
+                </td><td>Fix</td><td>CachedBdbBigMap double-close in finialize()</td><td>2005-03-23</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1177462" target="_top">1177462</a>
+                </td><td>Fix</td><td>RIS#readFullyOrUntil IOE/timeout</td><td>2005-04-05</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1149470" target="_top">1149470</a>
+                </td><td>Fix</td><td>all DNS attempts fail -6</td><td>2005-02-22</td><td>nobody</td><td>jsleeman</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1156363" target="_top">1156363</a>
+                </td><td>Fix</td><td>Flash SWF Extractor Unexpected end of input</td><td>2005-03-03</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1170562" target="_top">1170562</a>
+                </td><td>Fix</td><td>npe in extractorjs doing broad crawl w/ HEAD</td><td>2005-03-25</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1121567" target="_top">1121567</a>
+                </td><td>Fix</td><td>Heritrix 1.3.0 crashes hard (JVM SIGSEV)</td><td>2005-02-12</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1103015" target="_top">1103015</a>
+                </td><td>Fix</td><td>If filter in main scope disabled heritrix aborts
+                imme</td><td>2005-01-15</td><td>nobody</td><td>frodobay</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1054219" target="_top">1054219</a>
+                </td><td>Fix</td><td>Links not extracted from mislabelled (text/plain) MIME
+                type</td><td>2004-10-25</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1024120" target="_top">1024120</a>
+                </td><td>Fix</td><td>Lost crawl job after terminate running job with jobs
+                pending</td><td>2004-09-07</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1078094" target="_top">1078094</a>
+                </td><td>Fix</td><td>www-strip canonicalization unintended exclusion of
+                redirect</td><td>2004-12-02</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1157085" target="_top">1157085</a>
+                </td><td>Fix</td><td>DNS records in ARCs should use DNS server IP</td><td>2005-03-04</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1157385" target="_top">1157385</a>
+                </td><td>Fix</td><td>Crawler not making progress -- thread deadlock</td><td>2005-03-05</td><td>stack-sf</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1158270" target="_top">1158270</a>
+                </td><td>Fix</td><td>isMultibyteEncoding: Uncaught
+                UnsupportedOperationException</td><td>2005-03-07</td><td>stack-sf</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1080925" target="_top">1080925</a>
+                </td><td>Fix</td><td>MultiThreadedConnectionManager bottleneck</td><td>2004-12-07</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1157372" target="_top">1157372</a>
+                </td><td>Fix</td><td>missing space in progress-statistics.log</td><td>2005-03-05</td><td>stack-sf</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1153927" target="_top">1153927</a>
+                </td><td>Fix</td><td>npe in ExtractorHTML#innerProcess</td><td>2005-02-28</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1155641" target="_top">1155641</a>
+                </td><td>Fix</td><td>"Illegal response body offset" in
+                ReplayCharSequenceFactory</td><td>2005-03-02</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1154673" target="_top">1154673</a>
+                </td><td>Fix</td><td>ensure IPs match from DNS, used in HTTP, logged in
+                ARC</td><td>2005-03-01</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1002138" target="_top">1002138</a>
+                </td><td>Fix</td><td>swf extractor flash lib prints glyphcount on
+                stdout</td><td>2004-08-02</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1077924" target="_top">1077924</a>
+                </td><td>Fix</td><td>crawl.log timestamps out-of-order</td><td>2004-12-02</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1066573" target="_top">1066573</a>
+                </td><td>Fix</td><td>sometimes job based-on other job uses older job
+                name</td><td>2004-11-15</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1102755" target="_top">1102755</a>
+                </td><td>Fix</td><td>seeds text area truncates seeds; big seed lists break
+                config</td><td>2005-01-14</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1002164" target="_top">1002164</a>
+                </td><td>Fix</td><td>OOM hit very early broad-crawling</td><td>2004-08-02</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1006970" target="_top">1006970</a>
+                </td><td>Fix</td><td>UI list-ordering inconsistent</td><td>2004-08-10</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1092937" target="_top">1092937</a>
+                </td><td>Fix</td><td>UI/Settings - Expert Toggle loses user data</td><td>2004-12-29</td><td>nobody</td><td>nobody</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1152358" target="_top">1152358</a>
+                </td><td>Fix</td><td>OOM in postselector</td><td>2005-02-26</td><td>nobody</td><td>orion2598</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1068403" target="_top">1068403</a>
+                </td><td>Fix</td><td>ARCWriter gzip deflate hang</td><td>2004-11-17</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1123906" target="_top">1123906</a>
+                </td><td>Fix</td><td>ARCWriter alerts if Content-Type is null</td><td>2005-02-16</td><td>nobody</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1124029" target="_top">1124029</a>
+                </td><td>Fix</td><td>Bad synchronization causes NPE in
+                StatisticsTracker</td><td>2005-02-16</td><td>nobody</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1055789" target="_top">1055789</a>
+                </td><td>Fix</td><td>ARCWriter 'Gap' errors should be more prominent</td><td>2004-10-27</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1123859" target="_top">1123859</a>
+                </td><td>Fix</td><td>Change in ExtractorHTML triggers
+                NullPointerExceptions</td><td>2005-02-16</td><td>nobody</td><td>ck-heritrix</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1093073" target="_top">1093073</a>
+                </td><td>Fix</td><td>StackOverflowError shouldn't kill crawl</td><td>2004-12-29</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1068370" target="_top">1068370</a>
+                </td><td>Fix</td><td>[Flash] OOMEs on a particular URL</td><td>2004-11-17</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1108153" target="_top">1108153</a>
+                </td><td>Fix</td><td>unwritable ARCs directory barely noticeable</td><td>2005-01-23</td><td>nobody</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1023929" target="_top">1023929</a>
+                </td><td>Fix</td><td>"&amp;amp" converted to "&amp;" in preselector override
+                regex</td><td>2004-09-07</td><td>gojomo</td><td>danavery:</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1083428" target="_top">1083428</a>
+                </td><td>Fix</td><td>remove profile function in WUI?</td><td>2004-12-11</td><td>nobody</td><td>zhousp</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1068384" target="_top">1068384</a>
+                </td><td>Fix</td><td>deleting all(?) from queue corrupts frontier, kills
+                crawl</td><td>2004-11-17</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1106469" target="_top">1106469</a>
+                </td><td>Fix</td><td>ExtractorCSS regexp taking 'forever' on small
+                document</td><td>2005-01-20</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1116204" target="_top">1116204</a>
+                </td><td>Fix</td><td>FetchDNS doesn't work (bug in dnsjava)</td><td>2005-02-04</td><td>nobody</td><td>nobody</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1103838" target="_top">1103838</a>
+                </td><td>Fix</td><td>Redirect problem (Stops crawling after 3)</td><td>2005-01-17</td><td>nobody</td><td>nobody</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1119686" target="_top">1119686</a>
+                </td><td>Fix</td><td>oversight in CrawlURI; missing check for null</td><td>2005-02-09</td><td>nobody</td><td>frodobay</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1060508" target="_top">1060508</a>
+                </td><td>Fix</td><td>[uuri] port StringIndexOutOfBoundsExceptionn</td><td>2004-11-04</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1101831" target="_top">1101831</a>
+                </td><td>Fix</td><td>NPE in ROS#record</td><td>2005-01-13</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1114285" target="_top">1114285</a>
+                </td><td>Fix</td><td>Old profile/jobs won't work with HEAD (1.4)</td><td>2005-02-01</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1062621" target="_top">1062621</a>
+                </td><td>Fix</td><td>First arc record length is off by one</td><td>2004-11-08</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1117916" target="_top">1117916</a>
+                </td><td>Fix</td><td>PDFParser URL extraction bug</td><td>2005-02-07</td><td>nobody</td><td>benlitchfield</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1113977" target="_top">1113977</a>
+                </td><td>Fix</td><td>User Agent is tolowercased</td><td>2005-02-01</td><td>nobody</td><td>nobody</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1113470" target="_top">1113470</a>
+                </td><td>Fix</td><td>Exception in Modules Tab</td><td>2005-01-31</td><td>nobody</td><td>nobody</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1109521" target="_top">1109521</a>
+                </td><td>Fix</td><td>Hung Thread in StatisticsTracker</td><td>2005-01-25</td><td>stack-sf</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1107304" target="_top">1107304</a>
+                </td><td>Fix</td><td>Failed create new job based on job with absolute
+                settings</td><td>2005-01-22</td><td>nobody</td><td>frodobay</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1000865" target="_top">1000865</a>
+                </td><td>Fix</td><td>Long random pauses where no progress is made</td><td>2004-07-30</td><td>nobody</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1095952" target="_top">1095952</a>
+                </td><td>Fix</td><td>InvalidJobFileException: Status .. 'RUNNING'</td><td>2005-01-04</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1095453" target="_top">1095453</a>
+                </td><td>Fix</td><td>heritrix wont start with fedora core 3</td><td>2005-01-03</td><td>nobody</td><td>nobody</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1092135" target="_top">1092135</a>
+                </td><td>Fix</td><td>crawl.log hashes wrong for captures &gt; 64K</td><td>2004-12-28</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1103133" target="_top">1103133</a>
+                </td><td>Fix</td><td>deadlock in ip-politeness requeueing</td><td>2005-01-15</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1102771" target="_top">1102771</a>
+                </td><td>Fix</td><td>SURTs-from-seeds may lack trailing comma</td><td>2005-01-14</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1101396" target="_top">1101396</a>
+                </td><td>Fix</td><td>JS extr. does not parse spec. links starting w/ ./ or
+                ../</td><td>2005-01-12</td><td>nobody</td><td>ia_igor</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1100658" target="_top">1100658</a>
+                </td><td>Fix</td><td>update to [ 1100467 ] maven 1.0.2 build problem</td><td>2005-01-11</td><td>stack-sf</td><td>nobody</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1101138" target="_top">1101138</a>
+                </td><td>Fix</td><td>Update ant and httpclient jars</td><td>2005-01-12</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1098217" target="_top">1098217</a>
+                </td><td>Fix</td><td>ReplayCharSequence.toString() is broken</td><td>2005-01-07</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1093627" target="_top">1093627</a>
+                </td><td>Fix</td><td>[robots] robots.txt midfetch aborted gives open
+                access</td><td>2004-12-30</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1093614" target="_top">1093614</a>
+                </td><td>Fix</td><td>midfetch abort doesn't</td><td>2004-12-30</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1082358" target="_top">1082358</a>
+                </td><td>Fix</td><td>[uuri] String index out of range: 0</td><td>2004-12-09</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1086554" target="_top">1086554</a>
+                </td><td>Fix</td><td>glibc 2.3.2 NPTL hang (Was bdbfrontier stall
+                in...)</td><td>2004-12-16</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1072035" target="_top">1072035</a>
+                </td><td>Fix</td><td>[uuri] Underscore in host messes up port
+                parsing</td><td>2004-11-23</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1043251" target="_top">1043251</a>
+                </td><td>Fix</td><td>better/longer dns retries on lookup failure</td><td>2004-10-08</td><td>gojomo</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1090911" target="_top">1090911</a>
+                </td><td>Fix</td><td>NPE in ServerCache</td><td>2004-12-24</td><td>stack-sf</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1080926" target="_top">1080926</a>
+                </td><td>Fix</td><td>reducing max-toe-threads has no effect</td><td>2004-12-07</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1088788" target="_top">1088788</a>
+                </td><td>Fix</td><td>NPE in TextUtils.freeMatcher()</td><td>2004-12-20</td><td>stack-sf</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1082570" target="_top">1082570</a>
+                </td><td>Fix</td><td>heritrix.log ignored</td><td>2004-12-09</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1078503" target="_top">1078503</a>
+                </td><td>Fix</td><td>Edit configuration in UI gives NPE</td><td>2004-12-03</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1055592" target="_top">1055592</a>
+                </td><td>Fix</td><td>terminated crawl still hogging memory, causing
+                OOM</td><td>2004-10-27</td><td>nobody</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1081770" target="_top">1081770</a>
+                </td><td>Fix</td><td>quick-override accepts domain w/spaces, lost
+                checkboxes</td><td>2004-12-08</td><td>gojomo</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1080827" target="_top">1080827</a>
+                </td><td>Fix</td><td>Browser hangs when hundreds of seeds</td><td>2004-12-07</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1047396" target="_top">1047396</a>
+                </td><td>Fix</td><td>OOM in BdbFrontier/nio.Bits -- with plenty of heap
+                left</td><td>2004-10-14</td><td>nobody</td><td>gojomo</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1078581" target="_top">1078581</a>
+                </td><td>Fix</td><td>DomainSensitiveFrontier never finishes</td><td>2004-12-03</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1076251" target="_top">1076251</a>
+                </td><td>Fix</td><td>Upgrade bdbje 1.7.0 (WAS: Checkpointer thread
+                ...)</td><td>2004-11-30</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1072192" target="_top">1072192</a>
+                </td><td>Fix</td><td>bdbfrontier No locks available</td><td>2004-11-23</td><td>nobody</td><td>stack-sf</td></tr><tr><td>
+                  <a href="http://sourceforge.net/tracker/index.php?func=detail&group_id=73833&atid=539099&aid=1031499" target="_top">1031499</a>
+                </td><td>Fix</td><td>Deleted pending jobs show as pending in
+                restart.</td><td>2004-09-20</td><td>stack-sf</td><td>stack-sf</td></tr></tbody></table></div>
+      </p></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="1_6_0.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="1_2_0.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">12.&nbsp;Release 1.6.0 - 2005-12-01&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;14.&nbsp;Release 1.2.0 - 2004-11-16</td></tr></table></div></body></html>

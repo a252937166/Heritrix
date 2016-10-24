@@ -1,0 +1,74 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.&nbsp;Overview of the crawler</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix developer documentation"><link rel="up" href="index.html" title="Heritrix developer documentation"><link rel="prev" href="conventions.html" title="3.&nbsp;Coding conventions"><link rel="next" href="settings.html" title="5.&nbsp;Settings"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">4.&nbsp;Overview of the crawler</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="conventions.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="settings.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="overview"></a>4.&nbsp;Overview of the crawler</h2></div></div></div><p>The Heritrix Web Crawler is designed to be modular. Which modules to
+    use can be set at runtime from the user interface. Our hope is that if you
+    want the crawler to behave different from the default, it should only be a
+    matter of writing a new module as a replacement or in addition to the
+    modules shipped with the crawler.</p><p>The rest of this document assumes you have a basic understanding of
+    how to run a crawl (see: [<a href="biblio.html#heritrix_user_manual" title="[Heritrix User Guide]"><span class="abbrev">Heritrix User Guide</span></a>]). Since
+    the crawler is written in the Java programming language, you also need a
+    fairly good understanding of Java.</p><p>The crawler consists of <span class="emphasis"><em>core classes</em></span> and
+    <span class="emphasis"><em>pluggable modules</em></span>. The core classes can be
+    configured, but not replaced. The pluggable classes can be substituted by
+    altering the configuration of the crawler. A set of basic pluggable
+    classes are shipped with the crawler, but if you have needs not met by
+    these classes you could write your own.</p><div class="figure"><a name="N1012C"></a><p class="title"><b>Figure&nbsp;1.&nbsp;Crawler overview</b></p><div class="mediaobject"><img src="../crawler_overview1.png" width="622" alt="Crawler overview"></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10137"></a>4.1.&nbsp;The CrawlController</h3></div></div></div><p>The CrawlController collects all the classes which cooperate to
+      perform a crawl, provides a high-level interface to the running crawl,
+      and executes the "master thread" which doles out URIs from the Frontier
+      to the ToeThreads. As the "global context" for a crawl, subcomponents
+      will usually reach each other through the CrawlController.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1013C"></a>4.2.&nbsp;The Frontier</h3></div></div></div><p>The Frontier is responsible for handing out the next URI to be
+      crawled. It is responsible for maintaining politeness, that is making
+      sure that no web server is crawled too heavily. After a URI is crawled,
+      it is handed back to the Frontier along with any newly discovered URIs
+      that the Frontier should schedule for crawling.</p><p>It is the Frontier which keeps the state of the crawl. This
+      includes, but is not limited to:</p><div class="itemizedlist"><ul type="disc"><li><p>What URIs have been discovered</p></li><li><p>What URIs are being processed (fetched)</p></li><li><p>What URIs have been processed</p></li></ul></div><p>The Frontier implements the Frontier interface and can be
+      replaced by any Frontier that implements this interface. It should be
+      noted though that writing a Frontier is not a trivial task.</p><p>The Frontier relies on the behavior of at least the
+      following external processors: PreconditionEnforcer, LinksScoper
+      and the FrontierScheduler (See below for more each of these
+      Processors).  The PreconditionEnforcer makes sure dns and robots
+      are checked ahead of any fetching. LinksScoper tests if
+      we are interested in a particular URL -- whether the URL is
+      'within the crawl scope' and if so, what our level of interest in the
+      URL is, the priority with which it should be fetched. The
+      FrontierScheduler adds ('schedules') URLs to the Frontier for crawling.
+      </p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10151"></a>4.3.&nbsp;ToeThreads</h3></div></div></div><p>The Heritrix web crawler is multi threaded. Every URI is handled
+      by its own thread called a ToeThread. A ToeThread asks the Frontier for
+      a new URI, sends it through all the processors and then asks for a new
+      URI.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10156"></a>4.4.&nbsp;Processors</h3></div></div></div><p>Processors are grouped into processor chains (<a href="overview.html#processor_chains" title="Figure&nbsp;2.&nbsp;Processor chains">Figure&nbsp;2, &ldquo;Processor chains&rdquo;</a>). Each chain does some processing on a
+      URI. When a Processor is finished with a URI the ToeThread sends the URI
+      to the next Processor until the URI has been processed by all the
+      Processors. A processor has the option of telling the URI to skip to a
+      particular chain. Also if a processor throws a fatal error, the
+      processing skips to the Post-processing chain.</p><div class="figure"><a name="processor_chains"></a><p class="title"><b>Figure&nbsp;2.&nbsp;Processor chains</b></p><div class="mediaobject"><img src="../processing_steps.png" alt="Processor chains"></div></div><p>The task performed by the different processing chains are as
+      follows:</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10169"></a>4.4.1.&nbsp;Pre-fetch processing chain</h4></div></div></div><p>The first chain is responsible for investigating if the URI could
+        be crawled at this point. That includes checking if all preconditions
+        are met (DNS-lookup, fetching robots.txt, authentication). It is also
+        possible to completely block the crawling of URIs that have not passed
+        through the scope check.</p><p>In the <code class="literal">Pre-fetch processing</code> chain the
+        following processors should be included (or replacement modules that
+        perform similar operations):<div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>Preselector</strong></span></p><p>Last check if the URI should indeed be crawled. Can for
+              example recheck scope. Useful if scope rules have been changed
+              after the crawl starts. The scope is usually checked by the
+              LinksScoper, before new URIs are added to the Frontier to be
+              crawled. If the user changes the scope limits, it will not
+              affect already queued URIs. By rechecking the scope at this
+              point, you make sure that only URIs that are within current
+              scope are being crawled.</p></li><li><p><span class="bold"><strong>PreconditionEnforcer</strong></span></p><p>Ensures that all preconditions for crawling a URI have
+              been met. These currently include verifying that DNS and
+              robots.txt information has been fetched for the URI.</p></li></ul></div></p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10183"></a>4.4.2.&nbsp;Fetch processing chain</h4></div></div></div><p>The processors in this chain are responsible for getting the
+        data from the remote server. There should be one processor for each
+        protocol that Heritrix supports: e.g. FetchHTTP.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10188"></a>4.4.3.&nbsp;Extractor processing chain</h4></div></div></div><p>At this point the content of the document referenced by the URI
+        is available and several processors will in turn try to get new links
+        from it.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1018D"></a>4.4.4.&nbsp;Write/index processing chain</h4></div></div></div><p>This chain is responsible for writing the data to archive files.
+        Heritrix comes with an ARCWriterProcessor which writes to the ARC
+        format. New processors could be written to support other formats and
+        even create indexes.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10192"></a>4.4.5.&nbsp;Post-processing chain</h4></div></div></div><p>A URI should always pass through this chain even if a decision
+        not to crawl the URI was done in a processor earlier in the chain. The
+        post-processing chain must contain the following processors (or
+        replacement modules that perform similar operations):<div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>CrawlStateUpdater</strong></span></p><p>Updates the per-host information that may have been
+              affected by the fetch. This is currently robots and IP address
+              info.</p></li><li><p><span class="bold"><strong>LinksScoper</strong></span></p><p>Checks all links extracted from the current download
+              against the crawl scope.  Those that are out of scope are
+              discarded.  Logging of discarded URLs can be enabled.
+              </p></li><li><p><span class="bold"><strong>FrontierScheduler</strong></span></p><p>'Schedules' any URLs stored as CandidateURIs found
+                in the current CrawlURI with the frontier for crawling.
+                Also schedules prerequisites if any.</p></li></ul></div></p></div></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="conventions.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="settings.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">3.&nbsp;Coding conventions&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;5.&nbsp;Settings</td></tr></table></div></body></html>

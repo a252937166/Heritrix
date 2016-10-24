@@ -1,0 +1,56 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>3.&nbsp;Coding conventions</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix developer documentation"><link rel="up" href="index.html" title="Heritrix developer documentation"><link rel="prev" href="building.html" title="2.&nbsp;Obtaining and building Heritrix"><link rel="next" href="overview.html" title="4.&nbsp;Overview of the crawler"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">3.&nbsp;Coding conventions</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="building.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="overview.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="conventions"></a>3.&nbsp;Coding conventions</h2></div></div></div><p>Heritrix baselines on SUN's Code Conventions for the Java
+    Programming Language [<a href="biblio.html#sun_code_conventions" title="[Sun Code Conventions]"><span class="abbrev">Sun Code Conventions</span></a>]. It'd be hard
+    not to they say so little. They at least say <a href="http://java.sun.com/docs/codeconv/html/CodeConventions.doc3.html#313" target="_top">maximum
+    line length of 80 characters</a>.</p><p>We also will favor much of what is written in the document, Java
+    Programming Style Guidelines [<a href="biblio.html#programming_style_guidelines" title="[Java Programming Style Guidelines]"><span class="abbrev">Java Programming Style Guidelines</span></a>].</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N100DD"></a>3.1.&nbsp;Tightenings on the SUN conventions</h3></div></div></div><p>Below are tightenings on the SUN conventions used in
+      Heritrix.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N100E2"></a>3.1.1.&nbsp;No Tabs</h4></div></div></div><p>No tabs in source code. Set your editor to indent with
+        spaces.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N100E7"></a>3.1.2.&nbsp;Indent Width</h4></div></div></div><p>Indents are 4 characters wide.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N100EC"></a>3.1.3.&nbsp;Function/Block Bracket Open on Same Line</h4></div></div></div><p>Preference is to have the bracket that opens functions and
+        blocks on same line as function declaration or block test rather than
+        on a new line of its own. For example:<pre class="programlisting">if (true) {
+    return true;
+}</pre>and<pre class="programlisting">public void main (String [] args) {
+    System.println("Hello world");
+}</pre></p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N100F8"></a>3.1.4.&nbsp;File comment</h4></div></div></div><p>Here is the eclipse template we use for the file header
+        comment:<pre class="programlisting">/* ${type_name}
+ * 
+ * $$Id: developer_manual.xml 5022 2007-03-23 16:06:32Z stack-sf $$
+ * 
+ * Created on ${date}
+ *
+ * Copyright (C) ${year} Internet Archive.
+ * 
+ * This file is part of the Heritrix web crawler (crawler.archive.org).
+ * 
+ * Heritrix is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * any later version.
+ * 
+ * Heritrix is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser Public License
+ * along with Heritrix; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+${package_declaration}</pre></p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10100"></a>3.2.&nbsp;Long versus int</h3></div></div></div><p>We will be performing multi-billion resource crawls -- which may
+      have to pass up billions of pages that don't make the time/priority cut.
+      Our access tools will range over tens if not hundreds of billions of
+      resources. We may often archive resources larger than 2GB. Keep these in
+      mind when choosing between 'int' (max value: around 2 billion) and
+      'long' (max value: around 9 quintillion) in your code.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10105"></a>3.3.&nbsp;Unit tests code in same package</h3></div></div></div><p>"[A ] popular convention is to place all test classes in a
+      parallel directory structure. This allows you to use the same Java
+      package names for your tests, while keeping the source files separate.
+      To be honest, we do not like this approach because you must look in two
+      different directories to find files." from <span class="emphasis"><em>Section 4.11.3,
+      Java Extreme Programming Cookbook, By Eric M. Burke, Brian M.
+      Coyner</em></span>. We agree with the above so we put Unit Test classes
+      beside the classes they are testing in the source tree giving them the
+      name of the Class they are testing with a Test suffix.</p><p>Another advantage is that test classes of the same package can get
+      at testee's default access methods and members, something a test in
+      another package would not be able to do.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="log_messages"></a>3.4.&nbsp;Log Message Format</h3></div></div></div><p>A suggested format for source code log messages can be found at the
+    subversion site, <a href="http://subversion.tigris.org/hacking.html#log-messages" target="_top">Log
+    Messages</a>.
+    </p></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="building.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="overview.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">2.&nbsp;Obtaining and building Heritrix&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;4.&nbsp;Overview of the crawler</td></tr></table></div></body></html>

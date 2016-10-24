@@ -1,0 +1,130 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>8.&nbsp;Analysis of jobs</title><link href="../docbook.css" rel="stylesheet" type="text/css"><meta content="DocBook XSL Stylesheets V1.67.2" name="generator"><link rel="start" href="index.html" title="Heritrix User Manual"><link rel="up" href="index.html" title="Heritrix User Manual"><link rel="prev" href="running.html" title="7.&nbsp;Running a job"><link rel="next" href="outside.html" title="9.&nbsp;Outside the user interface"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">8.&nbsp;Analysis of jobs</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="running.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="outside.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="analysis"></a>8.&nbsp;Analysis of jobs</h2></div></div></div><p>Heritrix offers several facilities for examining the details of a
+    crawl. The reports and logs are also availible at run time.</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="completedjobs"></a>8.1.&nbsp;Completed jobs</h3></div></div></div><p>In the <span class="emphasis"><em>Jobs</em></span> tab (and page headers) is a
+      listing of how many completed jobs there are along with a link to a page
+      that lists them.</p><p>The following information / options are provided for each
+      completed job:</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>UID</strong></span></p><p>Each job has a unique (generated) ID. This is actually a time
+          stamp. It differentiates jobs with the same name from one
+          another.</p><p>This ID is used (among other things) for creating the job's
+          directory on disk.</p></li><li><p><span class="bold"><strong>Job name</strong></span></p><p>The name that the user gave the job.</p></li><li><p><span class="bold"><strong>Status</strong></span></p><p>Status of the job. Indicates how it ended.</p></li><li><p><span class="bold"><strong>Options</strong></span></p><p>In addtion the following options are available for each
+          job.</p><div class="itemizedlist"><ul type="circle"><li><p><span class="emphasis"><em>Crawl order</em></span></p><p>Opens up the actual XML file of the jobs configuration in
+              a seperate window. Generally only of interest to advanced
+              users.</p></li><li><p><span class="emphasis"><em>Crawl report</em></span></p><p>Takes the user to the job's Crawl report (<a href="analysis.html#crawlreport" title="8.3.1.&nbsp;Crawl report">Section&nbsp;8.3.1, &ldquo;Crawl report&rdquo;</a>).</p></li><li><p><span class="emphasis"><em>Seeds report</em></span></p><p>Takes the user to the job's Seeds report (<a href="analysis.html#seedsreport" title="8.3.2.&nbsp;Seeds report">Section&nbsp;8.3.2, &ldquo;Seeds report&rdquo;</a>).</p></li><li><p><span class="emphasis"><em>Seed file</em></span></p><p>Displays the seed</p></li><li><p><span class="emphasis"><em>Logs</em></span></p><p>Takes the user to the job's logs (<a href="analysis.html#logs" title="8.2.&nbsp;Logs">Section&nbsp;8.2, &ldquo;Logs&rdquo;</a>).</p></li><li><p><span class="emphasis"><em>Journal</em></span></p><p>Takes the user to the Journal page for the job (<a href="running.html#journal">Section&nbsp;7.4.1, &ldquo;Journal&rdquo;</a>). Users can still add entries to it.</p></li><li><p><span class="emphasis"><em>Delete</em></span></p><p>Marks the job as deleted. This will remove it from the WUI
+              but not from disk.</p></li></ul></div></li></ul></div><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>It is not possible to directly access the configuration for
+        completed jobs in the same way as you can for new, pending and running
+        jobs. Instead users can look at the actual XML configuration file
+        <span class="emphasis"><em>or</em></span> create a new job based on the old one. The new
+        job (and it need never be run) will perfectly mirror the settings of
+        the old one.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="logs"></a>8.2.&nbsp;Logs</h3></div></div></div><p>Heritrix writes several logs as it crawls a job. Each crawl job
+      has its own set of these logs.</p><p>The location where logs are written can be configured (expert
+      setting). Otherwise refer to the <code class="literal">crawl-manifest.txt</code>
+      for on disk location of logs (<a href="outside.html#crawl-manifest.txt" title="9.1.2.&nbsp;crawl-manifest.txt">Section&nbsp;9.1.2, &ldquo;crawl-manifest.txt&rdquo;</a>).</p><p>Logs can be manually rotated. Pause the crawl and at the base of
+      the screen a <span class="bold"><strong>Rotate Logs</strong></span> link will
+      appear. Clicking on <span class="bold"><strong>Rotate Logs</strong></span> will
+      move aside all current crawl logs appending a 14-digit GMT timestamp to
+      the moved-aside logs. New log files will be opened for the crawler to
+      use in subsequent crawling.</p><p>The WUI offers users four ways of viewing these logs by:</p><div class="orderedlist"><ol type="1"><li><p><span class="bold"><strong>Line number</strong></span></p><p>View a section of a log that starts at a given line number and
+          the next X lines following it. X is configurable, is 50 by
+          default.</p></li><li><p><span class="bold"><strong>Time stamp</strong></span></p><p>View a section of a log that starts at a given time stamp and
+          the next X lines following it. X is configurable, is 50 by default.
+          The format of the time stamp is the same as in the logs
+          (YYYY-MM-DDTHH:MM:SS.SSS). It is not necessary to add more detail to
+          this then is desired. For instance the entry 2004-04-25T08 will
+          match the first entry made after 8 am on the 25 of April,
+          2004.</p></li><li><p><span class="bold"><strong>Regular expression</strong></span></p><p>Filter the log based on a regular expression. Only lines
+          matching it (and optionally lines following it that are indented -
+          usually meaning that they are related to the previous ones) are
+          displayed.</p><p>This can be an expensive operation on really big logs,
+          requiring a lot of time for the page to load.</p></li><li><p><span class="bold"><strong>Tail</strong></span></p><p>Allows users to just look at the last X lines of the given
+          log. X can be configured, is 50 by default.</p></li></ol></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="crawllog"></a>8.2.1.&nbsp;crawl.log</h4></div></div></div><p>For each URI tried will get an entry in the
+        <code class="literal">crawl.log</code> regardless of success or failure.</p><p>Below is a two line extract from a crawl.log:</p><p><pre class="programlisting">2004-07-21T23:29:40.438Z   200        310 http://127.0.0.1:9999/selftest/Charset/charsetselftest_end.html LLLL http://127.0.0.1:9999/selftest/Charset/shiftjis.jsp text/html #000 20040721232940401+10 M77KNTBZH2IU6V2SIG5EEG45EJICNQNM -
+2004-07-21T23:29:40.502Z   200        225 http://127.0.0.1:9999/selftest/MaxLinkHops/5.html LLLLL http://127.0.0.1:9999/selftest/MaxLinkHops/4.html text/html #000 20040721232940481+12 M77KNTBZH2IU6V2SIG5EEG45EJICNQNM -</pre></p><p>The <span class="emphasis"><em>1st</em></span> column is a timestamp
+        in ISO8601 format, to millisecond resolution. The time is the instant
+        of logging. The <span class="emphasis"><em>2nd</em></span> column is the
+        fetch status code. Usually this is the HTTP status code but it can
+        also be a negative number if URL processing was unexpectedly
+        terminated. See <a href="glossary.html#statuscodes">Status codes</a> for a listing of
+        possible values.</p><p>The <span class="emphasis"><em>3rd</em></span> column is the size of
+        the downloaded document in bytes. For HTTP, Size is the size of the
+        content-only. It excludes the size of the HTTP response headers. For
+        DNS, its the total size of the DNS response. The <span class="emphasis"><em>4th</em></span> column is the URI of the document
+        downloaded. The <span class="emphasis"><em>5th</em></span> column holds
+        breadcrumb codes showing the trail of downloads that got us to the
+        current URI. See <a href="glossary.html#discoverypath">Discovery path</a> for description of
+        possible code values. The <span class="emphasis"><em>6th</em></span> column
+        holds the URI that immediately referenced this URI ('referrer'). Both
+        of the latter two fields -- the discovery path and the referrer URL --
+        will be empty for such as the seed URIs.</p><p>The <span class="emphasis"><em>7th</em></span> holds the document mime
+        type, the <span class="emphasis"><em>8th</em></span> column has the id of
+        the worker thread that downloaded this document, the <span class="emphasis"><em>9th</em></span> column holds a timestamp (in RFC2550/ARC
+        condensed digits-only format) indicating when a network fetch was
+        begun, and if appropriate, the millisecond duration of the fetch,
+        separated from the begin-time by a '+' character.</p><p>The <span class="emphasis"><em>10th</em></span> field is a SHA1 digest
+        of the content only (headers are not digested). The <span class="emphasis"><em>11th</em></span> column is the 'source tag' inherited by
+        this URI, if that feature is enabled. Finally, the <span class="emphasis"><em>12th</em></span> column holds &ldquo;<span class="quote">annotations</span>&rdquo;,
+        if any have been set. Possible annontations include: the number of
+        times the URI was tried (This field is '-' if the download was never
+        retried); the literal <code class="literal">lenTrunc</code> if the download was
+        truncated because it exceeded configured limits;
+        <code class="literal">timeTrunc</code> if the download was truncated because the
+        download time exceeded configured limits; or
+        <code class="literal">midFetchTrunc</code> if a midfetch filter determined the
+        download should be truncated.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C5D"></a>8.2.2.&nbsp;local-errors.log</h4></div></div></div><p>Errors that occur when processing a URI that can be handled by
+        the processors (usually these are network related problems trying to
+        fetch the document) are logged here.</p><p>Generally these can be safely ignored, but can provide insight
+        to advanced users when other logs and/or reports have unusual
+        data.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10C64"></a>8.2.3.&nbsp;progress-statistics.log</h4></div></div></div><p>This log is written by the <code class="literal">StatisticsTracker</code>
+        (<a href="config.html#stattrack" title="6.1.4.&nbsp;Statistics Tracking">Section&nbsp;6.1.4, &ldquo;Statistics Tracking&rdquo;</a>).</p><p>At configurable intervals a line about the progress of the crawl
+        is written to this file.</p><p>The legends are as follows:</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>timestamp</strong></span></p><p>Timestamp indicating when the line was written, in ISO8601
+            format.</p></li><li><p><span class="bold"><strong>discovered</strong></span></p><p>Number of URIs discovered to date.</p></li><li><p><span class="bold"><strong>queued</strong></span></p><p>Number of URIs queued at the moment.</p></li><li><p><span class="bold"><strong>downloaded</strong></span></p><p>Number of URIs downloaded to date</p></li><li><p><span class="bold"><strong>doc/s(avg)</strong></span></p><p>Number of documents downloaded per second since the last
+            snapshot. In parenthesis since the crawl began.</p></li><li><p><span class="bold"><strong>KB/s(avg)</strong></span></p><p>Amount in Kilobytes downloaded per second since the last
+            snapshot. In parenthesis since the crawl began.</p></li><li><p><span class="bold"><strong>dl-failures</strong></span></p><p>Number of URIs that Heritrix has failed to download to
+            date.</p></li><li><p><span class="bold"><strong>busy-thread</strong></span></p><p>Number of toe threads currently busy processing a
+            URI.</p></li><li><p><span class="bold"><strong>mem-use-KB</strong></span></p><p>Amount of memory currently assigned to the Java Virtual
+            Machine.</p></li></ul></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10CB4"></a>8.2.4.&nbsp;runtime-errors.log</h4></div></div></div><p>This log captures unexpected exceptions and errors that occur
+        during the crawl. Some may be due to hardware limitation (out of
+        memory, although that error may occur without being written to this
+        log), but most are probably because of software bugs, either in
+        Heritrix's core but more likely in one of the pluggable
+        classes.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10CB9"></a>8.2.5.&nbsp;uri-errors.log</h4></div></div></div><p>Contains errors in dealing with encountered URIs. Usually its
+        caused by erroneous URIs. Generally only of interest to advanced users
+        trying to explain unexpected crawl behavior.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="recover_gz"></a>8.2.6.&nbsp;recover.gz</h4></div></div></div><p>The recover.gz file is a gzipped journal of Frontier events. It
+        can be used to restore the Frontier after a crash to roughly the state
+        it had before the crash. See <a href="outside.html#recover" title="9.3.&nbsp;Recovery of Frontier State and recover.gz">Section&nbsp;9.3, &ldquo;Recovery of Frontier State and recover.gz&rdquo;</a> to learn
+        more.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="reports"></a>8.3.&nbsp;Reports</h3></div></div></div><p>Heritrix's WUI offers a couple of reports on ongoing and completed
+      crawl jobs.</p><p>Both are accessible via the Reports tab.<div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Although jobs are loaded after restarts of the software, their
+          statistics are not reloaded with them. That means that these reports
+          are only available as long as Heritrix is not shut down. All of the
+          information is however replicated in report files at the end of each
+          crawl for permanent storage.</p></div></p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="crawlreport"></a>8.3.1.&nbsp;Crawl report</h4></div></div></div><p>At the top of the crawl report some general statistics about the
+        crawl are printed out. All of these replicate data from the Console so
+        you should refer to <a href="running.html#console" title="7.1.&nbsp;Web Console">Section&nbsp;7.1, &ldquo;Web Console&rdquo;</a> for more information on
+        them.</p><p>Next in line are statistics about the number of URIs pending,
+        discovered, currently queued, downloaded etc. Question marks after
+        most of the values provides pop up descriptions of those
+        metrics.</p><p>Following that is a breakdown of the distribution of status
+        codes among URIs. It is sorted from most frequent to least. The number
+        of URIs found for each status code is displayed. Only successful
+        fetches are counted here.</p><p>A similar breakdown for file types (mime types) follows. In
+        addition to the number of URIs per file type, the amount of data for
+        that file type is also displayed.</p><p>Last a breakdown per host is provided. Number of URIs and amount
+        of data for each is presented. The time that has elapsed since the
+        last URI was finished for each host is also displayed for ongoing
+        crawls. This value can provide valuable data on what hosts are still
+        being actively crawled. Note that this value is only available while
+        the crawl is in progress since it has no meaning afterwards. Also any
+        pauses made to the crawl may distort these values, at least in the
+        short term following resumption of crawling. Most noticably while
+        paused all of these values will continue to grow.</p><p>Especially in broad crawls, this list can grow very
+        large.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="seedsreport"></a>8.3.2.&nbsp;Seeds report</h4></div></div></div><p>This report lists all the seeds in the seeds file and also any
+        <span class="emphasis"><em>discovered</em></span> seeds if that option is enabled (that
+        is treat redirects from seeds as new seeds). For each seed the status
+        code for the fetch attempt is presented in verbose form (that is with
+        minimum textual description of its meaning). Following that is the
+        seeds disposition, a quick look at if the seed was successfully
+        crawled, not attempted, or failed to crawl.</p><p>Successfully crawled seeds are any that Heritrix had no internal
+        errors crawling, the seed may never the less have generated a 404
+        (file not found) error.</p><p>Failure to crawl might be because of a bug in Heritrix or an
+        invalid seed (commonly DNS lookup will have failed).</p><p>If the report is examined before the crawl is finished there
+        might still be seeds not yet attempted. Especially if there is trouble
+        getting their prerequisites or if the seed list is exceptionally
+        large.</p></div></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="running.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="outside.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">7.&nbsp;Running a job&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;9.&nbsp;Outside the user interface</td></tr></table></div></body></html>
